@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HN Daily Skill · 每日总结</title>
+  <link rel="stylesheet" href="./assets/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>HN Daily 总结</h1>
+    <div class="sub">GitHub Pages 快速浏览每日完整报告</div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <h2>日期列表</h2>
+      <ul id="report-list"></ul>
+    </aside>
+
+    <section class="content">
+      <div class="actions">
+        <a id="download-pdf" class="btn" target="_blank" rel="noopener">下载 PDF</a>
+        <a id="open-md" class="btn ghost" target="_blank" rel="noopener">查看原始 MD</a>
+      </div>
+      <article id="report-body" class="markdown-body">加载中...</article>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="./assets/app.js" type="module"></script>
+</body>
+</html>

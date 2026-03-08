@@ -1,4 +1,11 @@
 {
+  "name": "hn-daily-skill",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:pages": "node scripts/build-pages.mjs",
+    "check:complete": "node scripts/check-completeness.mjs"
+  },
   "dependencies": {
     "playwright": "^1.58.2"
   }
