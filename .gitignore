@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Output files (can be regenerated)
+output/*.pdf
+output/*.html
+output/*-debug.html
+
+# Temporary files
+*.tmp
+.DS_Store
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
