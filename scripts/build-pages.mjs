@@ -1,53 +1,73 @@
 #!/usr/bin/env node
-import { readdir, readFile, writeFile, copyFile, mkdir } from 'node:fs/promises';
+import { mkdir, readdir, readFile, writeFile, copyFile, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
 const outputDir = join(root, 'output');
-const docsDataDir = join(root, 'docs', 'data');
+const docsDir = join(root, 'docs');
+const dataDir = join(docsDir, 'data');
 
-function extractDate(name) {
-  const m = name.match(/hn-daily-(\d{4}-\d{2}-\d{2})-complete\.md$/);
-  return m ? m[1] : null;
+function extractMeta(md, fallbackFile) {
+  const title = (md.match(/^#\s+(.+)$/m)?.[1] || fallbackFile).trim();
+  const date = md.match(/日期[:：]\s*([0-9]{4}-[0-9]{2}-[0-9]{2})/)?.[1] ||
+    (fallbackFile.match(/(\d{4}-\d{2}-\d{2})/)?.[1] ?? 'unknown');
+  const articleCount = Number(md.match(/文章数[:：]\s*(\d+)篇/)?.[1] || 0);
+  return { title, date, articleCount };
 }
 
 async function main() {
-  await mkdir(docsDataDir, { recursive: true });
-  if (!existsSync(outputDir)) throw new Error('output 目录不存在');
-
-  const files = await readdir(outputDir);
-  const mdFiles = files.filter(f => f.endsWith('-complete.md')).sort().reverse();
-
-  const items = [];
-  for (const md of mdFiles) {
-    const date = extractDate(md);
-    if (!date) continue;
-    const pdf = `hn-daily-${date}-complete.pdf`;
-    if (!files.includes(pdf)) continue;
-
-    const mdPath = join(outputDir, md);
-    const pdfPath = join(outputDir, pdf);
-
-    const text = await readFile(mdPath, 'utf-8');
-    const articleCount = (text.match(/## \d+\./g) || []).length;
-
-    await copyFile(mdPath, join(docsDataDir, md));
-    await copyFile(pdfPath, join(docsDataDir, pdf));
-
-    items.push({ date, md, pdf, articleCount });
+  if (!existsSync(outputDir)) {
+    throw new Error('output 目录不存在');
   }
 
-  await writeFile(
-    join(docsDataDir, 'index.json'),
-    JSON.stringify({ updatedAt: new Date().toISOString(), items }, null, 2),
-    'utf-8'
-  );
+  await mkdir(dataDir, { recursive: true });
 
-  console.log(`✅ Pages 数据已构建：${items.length} 条`);
+  // 清理旧数据（仅清 data）
+  const old = await readdir(dataDir).catch(() => []);
+  await Promise.all(old.map(f => rm(join(dataDir, f), { force: true })));
+
+  const files = await readdir(outputDir);
+  const mdFiles = files
+    .filter(f => f.endsWith('-complete.md'))
+    .sort();
+
+  const items = [];
+
+  for (const f of mdFiles) {
+    const full = join(outputDir, f);
+    const md = await readFile(full, 'utf8');
+    const meta = extractMeta(md, f);
+
+    const slug = meta.date;
+    const outMd = `${slug}.md`;
+    await writeFile(join(dataDir, outMd), md, 'utf8');
+
+    const pdfSrc = join(outputDir, f.replace(/\.md$/, '.pdf'));
+    let pdf = null;
+    if (existsSync(pdfSrc)) {
+      const outPdf = `${slug}.pdf`;
+      await copyFile(pdfSrc, join(dataDir, outPdf));
+      pdf = `data/${outPdf}`;
+    }
+
+    items.push({
+      date: meta.date,
+      title: meta.title,
+      articleCount: meta.articleCount,
+      md: `data/${outMd}`,
+      pdf
+    });
+  }
+
+  items.sort((a,b)=> (a.date < b.date ? 1 : -1));
+
+  await writeFile(join(dataDir, 'index.json'), JSON.stringify({ items, generatedAt: new Date().toISOString() }, null, 2), 'utf8');
+
+  console.log(`✅ pages data built: ${items.length} day(s)`);
 }
 
 main().catch(err => {
-  console.error('❌ build-pages 失败:', err.message);
+  console.error('❌ build-pages failed:', err.message);
   process.exit(1);
 });

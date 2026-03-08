@@ -1,0 +1,22 @@
+body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC','Microsoft YaHei',sans-serif; margin:0; color:#111; background:#fff; }
+header { padding:16px 20px; border-bottom:1px solid #eee; }
+header h1 { margin:0 0 6px; font-size:22px; }
+header p { margin:0; color:#666; }
+main { display:grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 80px); }
+aside { border-right:1px solid #eee; padding:16px; overflow:auto; }
+aside h2 { margin:0 0 10px; font-size:16px; }
+#list { list-style:none; padding:0; margin:0; }
+#list li { margin:0 0 8px; }
+#list button { width:100%; text-align:left; border:1px solid #e5e5e5; background:#fff; padding:10px; border-radius:8px; cursor:pointer; }
+#list button.active { border-color:#333; }
+section { padding:20px; overflow:auto; }
+.meta { color:#666; margin-bottom:12px; }
+#content { max-width:900px; line-height:1.65; }
+#content h1,#content h2,#content h3 { line-height:1.3; }
+#content pre { background:#f6f6f6; border:1px solid #e6e6e6; padding:10px; border-radius:6px; overflow:auto; }
+#content code { background:#f2f2f2; padding:2px 4px; border-radius:4px; }
+#content table { border-collapse:collapse; width:100%; }
+#content th,#content td { border:1px solid #ddd; padding:6px 8px; }
+#content th { background:#f5f5f5; }
+#pdfLink a { color:#0b57d0; }
+@media (max-width: 900px) { main { grid-template-columns: 1fr; } aside { border-right:none; border-bottom:1px solid #eee; } }
