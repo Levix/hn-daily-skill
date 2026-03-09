@@ -1,6 +1,13 @@
 {
   "items": [
     {
+      "date": "2026-03-08",
+      "title": "Hacker News Daily 深度解读 - 2026年3月8日",
+      "articleCount": 9,
+      "md": "data/2026-03-08.md",
+      "pdf": "data/2026-03-08.pdf"
+    },
+    {
       "date": "2026-03-06",
       "title": "Hacker News Daily 深度解读 - 2026年3月6日",
       "articleCount": 10,
@@ -8,5 +15,5 @@
       "pdf": "data/2026-03-06.pdf"
     }
   ],
-  "generatedAt": "2026-03-08T16:11:21.570Z"
+  "generatedAt": "2026-03-09T00:58:28.927Z"
 }
