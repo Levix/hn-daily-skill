@@ -32,7 +32,8 @@ function setActive(btn) {
 async function showItem(item) {
   const md = await loadMd(item.md);
   document.getElementById('meta').textContent = `${item.date} · ${item.articleCount || '-'} 篇`;
-  document.getElementById('content').innerHTML = marked.parse(md);
+  const rendered = marked.parse(md);
+  document.getElementById('content').innerHTML = DOMPurify.sanitize(rendered);
   document.getElementById('pdfLink').innerHTML = item.pdf ? `<a href="${item.pdf}" target="_blank" rel="noopener">下载 PDF</a>` : '';
 }
 

@@ -6,8 +6,9 @@ output/*.pdf
 output/*.html
 output/*-debug.html
 
-# Temporary files
+# Temporary / archive files
 *.tmp
+*.bundle
 .DS_Store
 
 # Logs

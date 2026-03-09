@@ -19,6 +19,9 @@ function yesterday() {
 
 async function main() {
   const date = getArg('--date') || yesterday();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    throw new Error(`非法日期参数: ${date}（仅支持 YYYY-MM-DD）`);
+  }
   const md = join(outputDir, `hn-daily-${date}-complete.md`);
   const pdf = join(outputDir, `hn-daily-${date}-complete.pdf`);
 
@@ -43,7 +46,9 @@ async function main() {
   execSync('npm run build:pages', { stdio: 'inherit' });
 
   // 同步到仓库：complete 文档 + docs 页面数据
-  execSync(`git add ${md} ${pdf} docs/data docs/index.html docs/app.js docs/styles.css scripts/build-pages.mjs`, { stdio: 'inherit' });
+  // 注意：output/*.pdf 可能被 .gitignore 忽略，因此对 complete.pdf 强制 add
+  execSync(`git add ${md} docs/data docs/index.html docs/app.js docs/styles.css scripts/build-pages.mjs`, { stdio: 'inherit' });
+  execSync(`git add -f ${pdf}`, { stdio: 'inherit' });
 
   const status = execSync('git status --porcelain', { encoding: 'utf8' }).trim();
   if (!status) {
