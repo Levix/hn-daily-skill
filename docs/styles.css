@@ -1,22 +1,182 @@
-body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC','Microsoft YaHei',sans-serif; margin:0; color:#111; background:#fff; }
-header { padding:16px 20px; border-bottom:1px solid #eee; }
-header h1 { margin:0 0 6px; font-size:22px; }
-header p { margin:0; color:#666; }
-main { display:grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 80px); }
-aside { border-right:1px solid #eee; padding:16px; overflow:auto; }
-aside h2 { margin:0 0 10px; font-size:16px; }
-#list { list-style:none; padding:0; margin:0; }
-#list li { margin:0 0 8px; }
-#list button { width:100%; text-align:left; border:1px solid #e5e5e5; background:#fff; padding:10px; border-radius:8px; cursor:pointer; }
-#list button.active { border-color:#333; }
-section { padding:20px; overflow:auto; }
-.meta { color:#666; margin-bottom:12px; }
-#content { max-width:900px; line-height:1.65; }
-#content h1,#content h2,#content h3 { line-height:1.3; }
-#content pre { background:#f6f6f6; border:1px solid #e6e6e6; padding:10px; border-radius:6px; overflow:auto; }
-#content code { background:#f2f2f2; padding:2px 4px; border-radius:4px; }
-#content table { border-collapse:collapse; width:100%; }
-#content th,#content td { border:1px solid #ddd; padding:6px 8px; }
-#content th { background:#f5f5f5; }
-#pdfLink a { color:#0b57d0; }
-@media (max-width: 900px) { main { grid-template-columns: 1fr; } aside { border-right:none; border-bottom:1px solid #eee; } }
+:root {
+  --text: #111;
+  --muted: #666;
+  --border: #e6e6e6;
+  --bg-soft: #f7f7f7;
+  --primary: #0b57d0;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  margin: 0;
+  color: var(--text);
+  background: #fff;
+}
+
+header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 10;
+}
+
+header h1 { margin: 0 0 6px; font-size: 22px; }
+header p { margin: 0; color: var(--muted); }
+
+main {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: calc(100vh - 80px);
+}
+
+aside {
+  border-right: 1px solid #eee;
+  padding: 16px;
+  overflow: auto;
+}
+
+aside h2 { margin: 0 0 10px; font-size: 16px; }
+
+#list { list-style: none; padding: 0; margin: 0; }
+#list li { margin: 0 0 8px; }
+
+#list button {
+  width: 100%;
+  text-align: left;
+  border: 1px solid #e5e5e5;
+  background: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  min-height: 54px;
+}
+
+#list button.active {
+  border-color: #333;
+  background: #f9f9f9;
+}
+
+section {
+  padding: 20px;
+  overflow: auto;
+}
+
+.meta { color: var(--muted); margin-bottom: 12px; }
+
+#content {
+  max-width: 900px;
+  line-height: 1.65;
+  word-break: break-word;
+}
+
+#content h1,
+#content h2,
+#content h3 { line-height: 1.3; }
+
+#content pre {
+  background: #f6f6f6;
+  border: 1px solid var(--border);
+  padding: 10px;
+  border-radius: 6px;
+  overflow: auto;
+}
+
+#content code {
+  background: #f2f2f2;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+#content table {
+  border-collapse: collapse;
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+}
+
+#content th,
+#content td {
+  border: 1px solid #ddd;
+  padding: 6px 8px;
+}
+
+#content th { background: #f5f5f5; }
+
+#pdfLink a { color: var(--primary); }
+
+@media (max-width: 900px) {
+  header {
+    padding: 12px 14px;
+  }
+
+  header h1 { font-size: 18px; }
+  header p { font-size: 13px; }
+
+  main {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  aside {
+    border-right: none;
+    border-bottom: 1px solid #eee;
+    padding: 10px 12px;
+  }
+
+  aside h2 {
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  /* 日期列表改为横向卡片，减少纵向占用 */
+  #list {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #list li {
+    margin: 0;
+    flex: 0 0 auto;
+  }
+
+  #list button {
+    width: auto;
+    min-width: 120px;
+    min-height: 46px;
+    padding: 8px 10px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
+  section {
+    padding: 14px 12px 20px;
+  }
+
+  .meta {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  #content {
+    font-size: 15px;
+    line-height: 1.75;
+  }
+
+  #content h1 { font-size: 24px; }
+  #content h2 { font-size: 20px; }
+  #content h3 { font-size: 17px; }
+
+  #content pre {
+    font-size: 12px;
+    padding: 8px;
+  }
+}
