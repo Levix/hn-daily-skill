@@ -8,6 +8,13 @@
       "pdf": "data/2026-03-08.pdf"
     },
     {
+      "date": "2026-03-07",
+      "title": "Hacker News Daily 深度解读 - 2026年3月7日",
+      "articleCount": 10,
+      "md": "data/2026-03-07.md",
+      "pdf": "data/2026-03-07.pdf"
+    },
+    {
       "date": "2026-03-06",
       "title": "Hacker News Daily 深度解读 - 2026年3月6日",
       "articleCount": 10,
@@ -15,5 +22,5 @@
       "pdf": "data/2026-03-06.pdf"
     }
   ],
-  "generatedAt": "2026-03-09T00:58:28.927Z"
+  "generatedAt": "2026-03-09T01:12:05.334Z"
 }
