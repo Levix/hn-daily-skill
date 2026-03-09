@@ -85,7 +85,7 @@ node scripts/md-to-pdf.mjs report.md --output ~/daily.pdf
 
 | 参数 | 说明 | 默认值 | 示例 |
 |-----|------|-------|------|
-| `--date` | 指定日期 | 自动获取最新 | `2026-03-07` |
+| `--date` | 指定日期 | 前一天（若不可用则向前回退） | `2026-03-07` |
 | `--format` | 输出格式 | `pdf` | `pdf` / `md` / `html` |
 | `--output` | 输出文件路径 | 自动生成 | `~/hn-daily.pdf` |
 | `--channel` | Discord 频道 ID | - | `1479860758488813609` |
@@ -130,7 +130,7 @@ openclaw cron add \
 ```
 
 任务流程：
-1. 获取最新 HN Daily 文章
+1. 获取前一天 HN Daily 文章（若不可用则向前回退）
 2. 生成 Markdown 源文件
 3. **转换为 PDF 格式**（默认）
 4. 发送到 Discord 频道

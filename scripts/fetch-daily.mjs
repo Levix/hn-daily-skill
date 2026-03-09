@@ -3,7 +3,7 @@
  * HN Daily Skill - Hacker News 每日精选解读
  * 
  * 使用方法:
- *   node fetch-daily.mjs                    # 获取最新一期
+ *   node fetch-daily.mjs                    # 默认获取前一天
  *   node fetch-daily.mjs --date 2026-03-07  # 获取指定日期
  *   node fetch-daily.mjs --output ~/hn.md   # 指定输出路径
  */
@@ -49,27 +49,30 @@ function getToday() {
   return formatDate(new Date());
 }
 
-// 尝试获取最新可用日期
+// 默认获取“前一天”的可用日期
 async function getLatestAvailableDate() {
-  const today = getToday();
-  // 尝试今天和前几天
-  for (let i = 0; i < 5; i++) {
+  // 尝试前一天及更早日期
+  for (let i = 1; i <= 6; i++) {
     const date = new Date();
     date.setDate(date.getDate() - i);
     const dateStr = formatDate(date);
-    
+
     try {
       const url = `${CONFIG.baseUrl}/${dateStr}.html`;
-      const response = await fetch(url, { 
+      const response = await fetch(url, {
         method: 'HEAD',
         headers: { 'User-Agent': 'HN-Daily-Skill/1.0' }
       });
       if (response.ok) return dateStr;
     } catch (e) {
-      // 继续尝试前一天
+      // 继续尝试更早日期
     }
   }
-  return today;
+
+  // 兜底前一天
+  const fallback = new Date();
+  fallback.setDate(fallback.getDate() - 1);
+  return formatDate(fallback);
 }
 
 // ============================================================================
@@ -364,7 +367,7 @@ HN Daily Skill - Hacker News 每日精选解读
 用法: node fetch-daily.mjs [选项]
 
 选项:
-  --date <YYYY-MM-DD>   指定日期 [默认: 自动获取最新]
+  --date <YYYY-MM-DD>   指定日期 [默认: 前一天（若不可用则继续向前回退）]
   --output <path>       输出文件路径
   --max-articles <n>    最大文章数量 [默认: 10]
   --help, -h           显示帮助

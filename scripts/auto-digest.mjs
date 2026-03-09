@@ -9,7 +9,7 @@
  * 4. 发送到 Discord
  * 
  * 使用方法:
- *   node auto-digest.mjs                    # 自动获取最新一期，默认生成 PDF
+ *   node auto-digest.mjs                    # 默认获取前一天并生成报告
  *   node auto-digest.mjs --date 2026-03-07  # 指定日期
  *   node auto-digest.mjs --format pdf       # 指定格式：pdf 或 md
  *   node auto-digest.mjs --send-only        # 仅发送已生成的文件
@@ -98,21 +98,26 @@ async function fetchWithTimeout(url, timeout = CONFIG.timeout) {
 // ============================================================================
 
 async function getLatestAvailableDate() {
-  for (let i = 0; i < 5; i++) {
+  // 默认从“前一天”开始找，避免拿到当天未完结/刚发布的数据
+  for (let i = 1; i <= 6; i++) {
     const date = new Date();
     date.setDate(date.getDate() - i);
     const dateStr = formatDate(date);
-    
+
     try {
       const url = `${CONFIG.baseUrl}/${dateStr}.html`;
-      const response = await fetch(url, { 
+      const response = await fetch(url, {
         method: 'HEAD',
         headers: { 'User-Agent': 'HN-Daily-Auto/1.0' }
       });
       if (response.ok) return dateStr;
     } catch (e) {}
   }
-  return getToday();
+
+  // 极端情况下兜底为前一天
+  const fallback = new Date();
+  fallback.setDate(fallback.getDate() - 1);
+  return formatDate(fallback);
 }
 
 function parseHNDailyPage(html) {
@@ -358,7 +363,7 @@ HN Daily Auto - 自动获取、总结、发送 HN Daily
 用法: node auto-digest.mjs [选项]
 
 选项:
-  --date <YYYY-MM-DD>    指定日期 [默认: 自动获取最新]
+  --date <YYYY-MM-DD>    指定日期 [默认: 前一天（若不可用则继续向前回退）]
   --send-only            仅发送已生成的文件，不重新获取
   --output <path>        指定输出文件路径
   --channel <id>         Discord 频道 ID
@@ -369,7 +374,7 @@ HN Daily Auto - 自动获取、总结、发送 HN Daily
   DISCORD_CHANNEL_ID     Discord 频道 ID
 
 示例:
-  node auto-digest.mjs                              # 获取最新并生成报告
+  node auto-digest.mjs                              # 默认抓取前一天并生成报告
   node auto-digest.mjs --date 2026-03-07            # 指定日期
   node auto-digest.mjs --channel 123456789          # 发送文件到 Discord
 `);
@@ -384,7 +389,7 @@ HN Daily Auto - 自动获取、总结、发送 HN Daily
   // 确定日期
   let targetDate = options.date;
   if (!targetDate) {
-    console.log('🔍 正在查找最新可用日期...');
+    console.log('🔍 正在查找前一天可用日期...');
     targetDate = await getLatestAvailableDate();
   }
   

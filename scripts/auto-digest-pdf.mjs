@@ -119,7 +119,7 @@ HN Daily Auto - 带 PDF 生成的完整自动化脚本
 用法: node auto-digest-pdf.mjs [选项]
 
 选项:
-  --date <YYYY-MM-DD>    指定日期
+  --date <YYYY-MM-DD>    指定日期（默认前一天）
   --format <pdf|md|html>  输出格式 [默认: pdf]
   --channel <id>         Discord 频道 ID
   --skip-check           跳过完整性检查
@@ -133,20 +133,26 @@ HN Daily Auto - 带 PDF 生成的完整自动化脚本
     return;
   }
   
-  const today = options.date || new Date().toISOString().split('T')[0];
-  
+  // 默认取前一天（可被 --date 覆盖）
+  const defaultDate = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().split('T')[0];
+  })();
+  const today = options.date || defaultDate;
+
   console.log('🚀 HN Daily Auto (PDF Edition)\n');
-  console.log(`📅 日期: ${today}`);
+  console.log(`📅 日期: ${today}（默认前一天）`);
   console.log(`📄 输出格式: ${options.format.toUpperCase()}`);
   if (options.skipCheck) {
     console.log('⏭️  跳过完整性检查');
   }
   console.log('');
-  
+
   // 1. 运行基础脚本生成 Markdown
   console.log('📡 步骤 1: 获取文章并生成 Markdown...');
-  const dateArg = options.date ? `--date ${options.date}` : '';
-  
+  const dateArg = `--date ${today}`;
+
   try {
     execSync(`node ${join(__dirname, 'auto-digest.mjs')} ${dateArg}`, {
       stdio: 'inherit',
