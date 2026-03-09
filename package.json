@@ -1,7 +1,8 @@
 {
   "scripts": {
     "check:completeness": "node scripts/check-completeness.mjs",
-    "build:pages": "node scripts/build-pages.mjs"
+    "build:pages": "node scripts/build-pages.mjs",
+    "sync:pages": "node scripts/sync-pages-and-push.mjs"
   },
   "dependencies": {
     "playwright": "^1.58.2"
