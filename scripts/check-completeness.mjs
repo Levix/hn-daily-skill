@@ -42,14 +42,41 @@ export async function checkDocumentCompleteness(filePath) {
     /TODO/i,
     /FIXME/i,
     /待补充/i,
-    /\[.*\].*\[.*\]/  // 空的链接
+    /\[.*\].*\[.*\]/,  // 空的链接
+    /本文围绕该主题给出关键信息与争议点/i,
+    /文章介绍了事件背景与核心主张/i,
+    /从工程实践看，重点在于可复现性、治理边界和长期维护成本/i,
+    /社区讨论主要集中在可行性、风险敞口与真实落地难度/i,
+    /整体结论是：短期看有实用价值，长期需要制度化与更明确的约束/i,
+    /该话题同时覆盖技术、商业和治理三条主线/i
   ];
   
   for (const pattern of placeholderPatterns) {
     if (pattern.test(content)) {
       results.isComplete = false;
-      results.issues.push(`发现占位符: ${pattern.toString()}`);
+      results.issues.push(`发现占位符/模板内容: ${pattern.toString()}`);
     }
+  }
+
+  // 检查 2.1: 是否存在大量重复段落（模板化风险）
+  const sentenceCounts = new Map();
+  const normalizedLines = content
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length >= 16 && !line.startsWith('#') && !line.startsWith('- **原文链接**') && !line.startsWith('- **HN 评论**'));
+
+  for (const line of normalizedLines) {
+    sentenceCounts.set(line, (sentenceCounts.get(line) || 0) + 1);
+  }
+
+  const repeatedLines = [...sentenceCounts.entries()]
+    .filter(([, count]) => count >= 4)
+    .sort((a, b) => b[1] - a[1]);
+
+  if (repeatedLines.length > 0) {
+    results.isComplete = false;
+    results.issues.push(`发现重复模板段落 ${repeatedLines.length} 处（最高重复 ${repeatedLines[0][1]} 次）`);
+    results.stats.repeatedTemplateLines = repeatedLines.slice(0, 5).map(([line, count]) => ({ line: line.slice(0, 60), count }));
   }
 
   // 检查 3: 是否包含完整的文章结构
