@@ -1,6 +1,13 @@
 {
   "items": [
     {
+      "date": "2026-03-11",
+      "title": "hn-daily-2026-03-11-complete.md",
+      "articleCount": 0,
+      "md": "data/2026-03-11.md",
+      "pdf": "data/2026-03-11.pdf"
+    },
+    {
       "date": "2026-03-10",
       "title": "Hacker News Daily 深度解读 - 2026年3月10日",
       "articleCount": 10,
@@ -36,5 +43,5 @@
       "pdf": null
     }
   ],
-  "generatedAt": "2026-03-11T03:32:20.118Z"
+  "generatedAt": "2026-03-12T00:05:34.648Z"
 }
