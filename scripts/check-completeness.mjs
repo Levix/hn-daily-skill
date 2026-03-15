@@ -43,12 +43,22 @@ export async function checkDocumentCompleteness(filePath) {
     /FIXME/i,
     /待补充/i,
     /\[.*\].*\[.*\]/,  // 空的链接
+
+    // 旧模板（3/10）
     /本文围绕该主题给出关键信息与争议点/i,
     /文章介绍了事件背景与核心主张/i,
     /从工程实践看，重点在于可复现性、治理边界和长期维护成本/i,
     /社区讨论主要集中在可行性、风险敞口与真实落地难度/i,
     /整体结论是：短期看有实用价值，长期需要制度化与更明确的约束/i,
-    /该话题同时覆盖技术、商业和治理三条主线/i
+    /该话题同时覆盖技术、商业和治理三条主线/i,
+
+    // 补录模板（3/12~3/14）
+    /以下内容为服务中断期间的补录版本/i,
+    /提供了可讨论的实践样本/i,
+    /模型能力与工程约束.*平衡题/i,
+    /建议动作\s*\d+[:：]/i,
+    /条目\s*\d+\s*的议题类型为/i,
+    /帮助团队更快判断投入优先级与落地边界/i
   ];
   
   for (const pattern of placeholderPatterns) {
@@ -99,6 +109,25 @@ export async function checkDocumentCompleteness(filePath) {
 
   if (results.stats.sectionsFound < 3) {
     results.isComplete = false;
+  }
+
+  // 检查 3.1: 一句话总结质量（长度 + 去重）
+  const oneLinerMatches = [...content.matchAll(/### 一句话总结\s*\n([^\n]+)/g)].map(m => m[1].trim());
+  results.stats.oneLinerCount = oneLinerMatches.length;
+
+  if (oneLinerMatches.length > 0) {
+    const tooShort = oneLinerMatches.filter(s => s.length < 18).length;
+    const uniqueCount = new Set(oneLinerMatches).size;
+
+    if (tooShort > 0) {
+      results.isComplete = false;
+      results.issues.push(`一句话总结过短: ${tooShort} 条`);
+    }
+
+    if (uniqueCount / oneLinerMatches.length < 0.8) {
+      results.isComplete = false;
+      results.issues.push(`一句话总结重复度过高（唯一率 ${(uniqueCount / oneLinerMatches.length * 100).toFixed(0)}%）`);
+    }
   }
 
   // 检查 4: 文章数量（通常 9-10 篇）
