@@ -2,7 +2,7 @@
   "items": [
     {
       "date": "2026-03-15",
-      "title": "hn-daily-2026-03-15-complete.md",
+      "title": "Hacker News Daily 完整总结 - 2026-03-15",
       "articleCount": 10,
       "md": "data/2026-03-15.md",
       "pdf": "data/2026-03-15.pdf"
@@ -71,5 +71,5 @@
       "pdf": "data/2026-03-06.pdf"
     }
   ],
-  "generatedAt": "2026-03-16T00:45:38.983Z"
+  "generatedAt": "2026-03-16T00:58:05.537Z"
 }
