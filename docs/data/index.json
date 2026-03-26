@@ -1,6 +1,13 @@
 {
   "items": [
     {
+      "date": "2026-03-25",
+      "title": "Hacker News Daily 完整总结 - 2026-03-25",
+      "articleCount": 0,
+      "md": "data/2026-03-25.md",
+      "pdf": "data/2026-03-25.pdf"
+    },
+    {
       "date": "2026-03-19",
       "title": "Hacker News Daily 完整总结 - 2026-03-19",
       "articleCount": 0,
@@ -26,7 +33,7 @@
       "title": "hn-daily-2026-03-16-complete.md",
       "articleCount": 0,
       "md": "data/2026-03-16.md",
-      "pdf": null
+      "pdf": "data/2026-03-16.pdf"
     },
     {
       "date": "2026-03-15",
@@ -47,14 +54,14 @@
       "title": "Hacker News Daily 完整总结 - 2026-03-13",
       "articleCount": 10,
       "md": "data/2026-03-13.md",
-      "pdf": null
+      "pdf": "data/2026-03-13.pdf"
     },
     {
       "date": "2026-03-12",
       "title": "Hacker News Daily 完整总结 - 2026-03-12",
       "articleCount": 10,
       "md": "data/2026-03-12.md",
-      "pdf": null
+      "pdf": "data/2026-03-12.pdf"
     },
     {
       "date": "2026-03-11",
@@ -96,8 +103,8 @@
       "title": "Hacker News Daily 深度解读 - 2026年3月6日",
       "articleCount": 10,
       "md": "data/2026-03-06.md",
-      "pdf": null
+      "pdf": "data/2026-03-06.pdf"
     }
   ],
-  "generatedAt": "2026-03-25T03:45:02.572Z"
+  "generatedAt": "2026-03-26T00:33:18.273Z"
 }
