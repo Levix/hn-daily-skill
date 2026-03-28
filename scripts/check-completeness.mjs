@@ -5,7 +5,7 @@
  * 检查生成的 Markdown/PDF 文档是否包含完整内容
  */
 
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 
 /**
@@ -22,6 +22,16 @@ export async function checkDocumentCompleteness(filePath) {
   if (!existsSync(filePath)) {
     results.isComplete = false;
     results.issues.push('文件不存在');
+    return results;
+  }
+
+  if (filePath.toLowerCase().endsWith('.pdf')) {
+    const fileStats = await stat(filePath);
+    results.isComplete = false;
+    results.stats.fileSize = fileStats.size;
+    results.stats.articleCount = 0;
+    results.stats.sectionsFound = 0;
+    results.issues.push('暂不支持直接检查 PDF，请改为检查对应的 Markdown 文件');
     return results;
   }
 
