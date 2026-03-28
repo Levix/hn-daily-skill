@@ -30,7 +30,7 @@ function buildRoutingArgs(options = {}) {
 export async function runOpenClawAgent(article, content, options = {}) {
   const { timeoutSeconds = 600, thinking = 'medium' } = options;
   const prompt = buildCompleteArticlePrompt(article, content);
-  const { stdout } = await execFileAsync('openclaw', [
+  const { stdout, stderr } = await execFileAsync('openclaw', [
     'agent',
     ...buildRoutingArgs(options),
     '--json',
@@ -42,7 +42,8 @@ export async function runOpenClawAgent(article, content, options = {}) {
     thinking
   ]);
 
-  const parsed = JSON.parse(stdout);
+  const raw = stdout.trim() ? stdout : stderr;
+  const parsed = JSON.parse(raw);
   const text = parsed?.response?.output_text || parsed?.output_text || parsed?.message || '';
   if (!text) {
     throw new Error('empty agent response');
