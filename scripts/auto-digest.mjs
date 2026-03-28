@@ -67,6 +67,10 @@ function getToday() {
   return formatDate(new Date());
 }
 
+function getDefaultMarkdownPath(date) {
+  return join(OUTPUT_DIR, `hn-daily-${date}.md`);
+}
+
 // ============================================================================
 // 网络请求
 // ============================================================================
@@ -396,8 +400,7 @@ HN Daily Auto - 自动获取、总结、发送 HN Daily
   console.log(`📅 日期: ${targetDate}\n`);
   
   // 确定输出路径
-  const outputPath = options.output || 
-    join(OUTPUT_DIR, `hn-daily-${targetDate}-detailed.md`);
+  const outputPath = options.output || getDefaultMarkdownPath(targetDate);
   
   // 如果仅发送模式
   if (options.sendOnly) {
@@ -460,7 +463,7 @@ HN Daily Auto - 自动获取、总结、发送 HN Daily
   const report = await generateReport(targetDate, articles, summaries);
   // 添加 UTF-8 BOM 确保编码正确识别
   const reportWithBOM = '\ufeff' + report;
-  const mdPath = join(OUTPUT_DIR, `hn-daily-${targetDate}.md`);
+  const mdPath = getDefaultMarkdownPath(targetDate);
   await writeFile(mdPath, reportWithBOM, 'utf-8');
   console.log(`   ✅ 报告已保存: ${outputPath} (UTF-8 with BOM)\n`);
   
