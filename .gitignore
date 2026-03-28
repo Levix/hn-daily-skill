@@ -20,3 +20,6 @@ output/*-debug.html
 
 # OS files
 Thumbs.db
+
+# Local planning artifacts
+docs/superpowers/
