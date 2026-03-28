@@ -9,10 +9,11 @@ const docsDir = join(root, 'docs');
 const dataDir = join(docsDir, 'data');
 
 function extractMeta(md, fallbackFile) {
-  const title = (md.match(/^#\s+(.+)$/m)?.[1] || fallbackFile).trim();
-  const date = md.match(/日期[:：]\s*([0-9]{4}-[0-9]{2}-[0-9]{2})/)?.[1] ||
+  const normalized = md.replace(/^\ufeff/, '');
+  const title = (normalized.match(/^#\s+(.+)$/m)?.[1] || fallbackFile).trim();
+  const date = normalized.match(/日期[:：]\s*([0-9]{4}-[0-9]{2}-[0-9]{2})/)?.[1] ||
     (fallbackFile.match(/(\d{4}-\d{2}-\d{2})/)?.[1] ?? 'unknown');
-  const articleCount = Number(md.match(/文章数[:：]\s*(\d+)篇/)?.[1] || 0);
+  const articleCount = Number(normalized.match(/文章数[:：]\s*(\d+)\s*篇/)?.[1] || 0);
   return { title, date, articleCount };
 }
 
