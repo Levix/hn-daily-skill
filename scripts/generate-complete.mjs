@@ -27,6 +27,13 @@ function getPath(outputDir, date, suffix) {
   return join(outputDir, `hn-daily-${date}-${suffix}`);
 }
 
+function serializeError(error) {
+  return {
+    message: error.message,
+    name: error.name
+  };
+}
+
 export async function main(overrides = {}) {
   const options = { ...parseArgs(), ...overrides };
   const outputDir = options.outputDir || DEFAULT_OUTPUT_DIR;
@@ -45,9 +52,27 @@ export async function main(overrides = {}) {
 
   for (let index = 0; index < collected.articles.length; index += 1) {
     const article = collected.articles[index];
-    const summary = await generate({ article, content: article.content, retries: 2 });
-    articles.push({ ...article, summary });
-    attempts.push({ index, title: article.title, status: 'success' });
+    try {
+      const summary = await generate({ article, content: article.content, retries: 2 });
+      articles.push({ ...article, summary });
+      attempts.push({ index, title: article.title, status: 'success' });
+    } catch (error) {
+      const runManifestPath = getPath(outputDir, collected.date, 'run.json');
+      attempts.push({
+        index,
+        title: article.title,
+        status: 'failed',
+        error: serializeError(error)
+      });
+      await writeRunManifest(runManifestPath, {
+        date: collected.date,
+        articleCount: articles.length,
+        status: 'failed',
+        attempts,
+        error: serializeError(error)
+      });
+      throw error;
+    }
   }
 
   const markdown = renderCompleteReport({ date: collected.date, articles });
@@ -59,6 +84,7 @@ export async function main(overrides = {}) {
   await writeRunManifest(runManifestPath, {
     date: collected.date,
     articleCount: articles.length,
+    status: 'completed',
     attempts,
     completeness
   });

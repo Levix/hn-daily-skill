@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { access, mkdtemp, readFile, rm } from 'node:fs/promises';
+import { constants } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { main } from '../scripts/generate-complete.mjs';
@@ -82,6 +83,43 @@ test('generate-complete returns a passing completeness result for valid complete
     });
 
     assert.equal(result.completeness.isComplete, true, result.completeness.issues?.join('\n'));
+  } finally {
+    await rm(outputDir, { recursive: true, force: true });
+  }
+});
+
+test('generate-complete writes a failure manifest and stops when article generation exhausts retries', async () => {
+  const outputDir = await mkdtemp(join(tmpdir(), 'hn-daily-generate-complete-'));
+  const completeMarkdownPath = join(outputDir, 'hn-daily-2099-05-03-complete.md');
+  const runManifestPath = join(outputDir, 'hn-daily-2099-05-03-run.json');
+
+  try {
+    await assert.rejects(
+      main({
+        date: '2099-05-03',
+        outputDir,
+        collectDailyArticles: async () => ({
+          date: '2099-05-03',
+          articles: [makeArticle(1), makeArticle(2)]
+        }),
+        generateArticleSummaryWithRetry: async ({ article }) => {
+          if (article.title === 'Article 2') {
+            throw new Error('summary failed after retries');
+          }
+
+          return makeSummary(1);
+        }
+      }),
+      /summary failed after retries/
+    );
+
+    const manifest = JSON.parse(await readFile(runManifestPath, 'utf8'));
+    assert.equal(manifest.status, 'failed');
+    assert.equal(manifest.attempts.length, 2);
+    assert.equal(manifest.attempts[0].status, 'success');
+    assert.equal(manifest.attempts[1].status, 'failed');
+    assert.match(manifest.error.message, /summary failed after retries/);
+    await assert.rejects(access(completeMarkdownPath, constants.F_OK));
   } finally {
     await rm(outputDir, { recursive: true, force: true });
   }
