@@ -1,0 +1,69 @@
+{
+  "date": "2026-03-24",
+  "articleCount": 10,
+  "status": "completed",
+  "attempts": [
+    {
+      "index": 0,
+      "title": "Autoresearch on an old research idea",
+      "status": "success"
+    },
+    {
+      "index": 1,
+      "title": "FCC updates covered list to include foreign-made consumer routers",
+      "status": "success"
+    },
+    {
+      "index": 2,
+      "title": "Claude Code Cheat Sheet",
+      "status": "success"
+    },
+    {
+      "index": 3,
+      "title": "Microsoft's \\\"fix\\\" for Windows 11",
+      "status": "success"
+    },
+    {
+      "index": 4,
+      "title": "Tell HN: Litellm 1.82.7 and 1.82.8 on PyPI are compromised",
+      "status": "success"
+    },
+    {
+      "index": 5,
+      "title": "Malicious litellm_init.pth in litellm 1.82.8 PyPI package – credential stealer",
+      "status": "success"
+    },
+    {
+      "index": 6,
+      "title": "Mystery jump in oil trading ahead of Trump post draws scrutiny",
+      "status": "success"
+    },
+    {
+      "index": 7,
+      "title": "Apple Business",
+      "status": "success"
+    },
+    {
+      "index": 8,
+      "title": "Wine 11 rewrites how Linux runs Windows games at kernel with massive speed gains",
+      "status": "success"
+    },
+    {
+      "index": 9,
+      "title": "Is anybody else bored of talking about AI?",
+      "status": "success"
+    }
+  ],
+  "completeness": {
+    "filePath": "/Users/leeeeeee/.openclaw/workspace-discord/skills/hn-daily-skill/output/hn-daily-2026-03-24-complete.md",
+    "isComplete": true,
+    "issues": [],
+    "stats": {
+      "fileSize": 11505,
+      "sectionsFound": 5,
+      "oneLinerCount": 10,
+      "articleCount": 10
+    }
+  },
+  "completePdfPath": "/Users/leeeeeee/.openclaw/workspace-discord/skills/hn-daily-skill/output/hn-daily-2026-03-24-complete.pdf"
+}
