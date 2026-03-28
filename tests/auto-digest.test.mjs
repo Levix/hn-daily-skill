@@ -34,33 +34,39 @@ async function createAutoDigestPdfFixture({ date, pdfBytes }) {
   await mkdir(outputDir, { recursive: true });
 
   await writeFile(join(scriptsDir, 'auto-digest-pdf.mjs'), sourceScript, 'utf8');
-  await writeFile(join(scriptsDir, 'auto-digest.mjs'), `
+  await writeFile(join(scriptsDir, 'generate-complete.mjs'), `
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR = join(__dirname, '..', 'output');
-const dateIndex = process.argv.indexOf('--date');
-const date = dateIndex !== -1 ? process.argv[dateIndex + 1] : '${date}';
+export async function main(overrides = {}) {
+  const date = overrides.date || '${date}';
+  await mkdir(OUTPUT_DIR, { recursive: true });
 
-await mkdir(OUTPUT_DIR, { recursive: true });
-await writeFile(join(OUTPUT_DIR, \`hn-daily-\${date}.md\`), '# stub\\n', 'utf8');
-`, 'utf8');
-  await writeFile(join(scriptsDir, 'check-completeness.mjs'), `
-export async function checkDocumentCompleteness() {
+  const completeMarkdownPath = join(OUTPUT_DIR, \`hn-daily-\${date}-complete.md\`);
+  const completePdfPath = join(OUTPUT_DIR, \`hn-daily-\${date}-complete.pdf\`);
+  const runManifestPath = join(OUTPUT_DIR, \`hn-daily-\${date}-run.json\`);
+
+  await writeFile(completeMarkdownPath, '# stub\\n', 'utf8');
+  await writeFile(completePdfPath, Buffer.from([${Array.from(pdfBytes).join(', ')}]));
+  await writeFile(runManifestPath, JSON.stringify({ date, status: 'completed' }), 'utf8');
+
   return {
-    isComplete: true,
-    issues: [],
-    stats: { fileSize: 9999, articleCount: 10, sectionsFound: 5 }
+    articleCount: 10,
+    completeMarkdownPath,
+    completePdfPath,
+    runManifestPath,
+    completeness: { isComplete: true, issues: [], stats: { articleCount: 10, sectionsFound: 5 } }
   };
 }
 `, 'utf8');
   await writeFile(join(scriptsDir, 'md-to-pdf.mjs'), `
 import { writeFile } from 'node:fs/promises';
 
-export async function convertMarkdownToPDF(markdownPath) {
-  const outputPath = markdownPath.replace(/\\.md$/, '.pdf');
+export async function convertMarkdownToPDF(markdownPath, options = {}) {
+  const outputPath = markdownPath.replace(/\\.md$/, options.format === 'html' ? '.html' : '.pdf');
   await writeFile(outputPath, Buffer.from([${Array.from(pdfBytes).join(', ')}]));
   return outputPath;
 }
@@ -133,8 +139,8 @@ test('auto-digest-pdf preserves generated markdown and pdf artifacts', async () 
     date,
     pdfBytes: Buffer.from([0x25, 0x50, 0x44, 0x46, 0x0a])
   });
-  const markdownPath = join(tempRoot, 'output', `hn-daily-${date}.md`);
-  const pdfPath = join(tempRoot, 'output', `hn-daily-${date}.pdf`);
+  const markdownPath = join(tempRoot, 'output', `hn-daily-${date}-complete.md`);
+  const pdfPath = join(tempRoot, 'output', `hn-daily-${date}-complete.pdf`);
 
   try {
     const result = spawnSync(process.execPath, ['scripts/auto-digest-pdf.mjs', '--date', date, '--format', 'pdf', '--skip-check'], {
@@ -154,7 +160,7 @@ test('auto-digest-pdf copies pdf attachments without corrupting binary content',
   const date = '2099-04-04';
   const expectedPdf = Buffer.from([0x25, 0x50, 0x44, 0x46, 0x00, 0xff, 0x00, 0x80]);
   const tempRoot = await createAutoDigestPdfFixture({ date, pdfBytes: expectedPdf });
-  const copiedPath = join(tempRoot, `hn-daily-${date}.pdf`);
+  const copiedPath = join(tempRoot, `hn-daily-${date}-complete.pdf`);
 
   try {
     const result = spawnSync(process.execPath, ['scripts/auto-digest-pdf.mjs', '--date', date, '--format', 'pdf', '--skip-check', '--channel', 'demo'], {
@@ -164,6 +170,30 @@ test('auto-digest-pdf copies pdf attachments without corrupting binary content',
 
     assert.equal(result.status, 0, result.stderr || result.stdout);
     assert.equal(existsSync(copiedPath), true, result.stdout);
+    assert.deepEqual(await readFile(copiedPath), expectedPdf);
+  } finally {
+    await rm(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test('auto-digest-pdf delegates to generate-complete artifacts for cron runs', async () => {
+  const date = '2099-04-05';
+  const expectedPdf = Buffer.from([0x25, 0x50, 0x44, 0x46, 0x00, 0xff, 0x00, 0x80]);
+  const tempRoot = await createAutoDigestPdfFixture({ date, pdfBytes: expectedPdf });
+  const completeMarkdownPath = join(tempRoot, 'output', `hn-daily-${date}-complete.md`);
+  const completePdfPath = join(tempRoot, 'output', `hn-daily-${date}-complete.pdf`);
+  const copiedPath = join(tempRoot, `hn-daily-${date}-complete.pdf`);
+
+  try {
+    const result = spawnSync(process.execPath, ['scripts/auto-digest-pdf.mjs', '--date', date, '--format', 'pdf', '--channel', 'demo'], {
+      cwd: tempRoot,
+      encoding: 'utf8'
+    });
+
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.equal(existsSync(completeMarkdownPath), true);
+    assert.equal(existsSync(completePdfPath), true);
+    assert.equal(existsSync(copiedPath), true);
     assert.deepEqual(await readFile(copiedPath), expectedPdf);
   } finally {
     await rm(tempRoot, { recursive: true, force: true });
