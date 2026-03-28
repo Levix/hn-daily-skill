@@ -5,11 +5,34 @@ import { parseArticleSummary } from '../parsers/article-summary-parser.mjs';
 
 const execFileAsync = promisify(execFile);
 
+function buildRoutingArgs(options = {}) {
+  const agentId = options.agentId || process.env.OPENCLAW_AGENT_ID || process.env.OPENCLAW_AGENT || null;
+  const sessionId = options.sessionId || process.env.OPENCLAW_SESSION_ID || null;
+  const recipient = options.to || process.env.OPENCLAW_TO || null;
+  const channel = options.channel || process.env.OPENCLAW_CHANNEL || null;
+  const args = [];
+
+  if (agentId) {
+    args.push('--agent', agentId);
+  } else if (sessionId) {
+    args.push('--session-id', sessionId);
+  } else if (recipient) {
+    args.push('--to', recipient);
+  }
+
+  if (channel) {
+    args.push('--channel', channel);
+  }
+
+  return args;
+}
+
 export async function runOpenClawAgent(article, content, options = {}) {
   const { timeoutSeconds = 600, thinking = 'medium' } = options;
   const prompt = buildCompleteArticlePrompt(article, content);
   const { stdout } = await execFileAsync('openclaw', [
     'agent',
+    ...buildRoutingArgs(options),
     '--json',
     '--message',
     prompt,
