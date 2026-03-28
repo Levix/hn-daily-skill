@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 
@@ -24,6 +25,7 @@ async function main() {
   }
   const md = join(outputDir, `hn-daily-${date}-complete.md`);
   const pdf = join(outputDir, `hn-daily-${date}-complete.pdf`);
+  const runManifestPath = join(outputDir, `hn-daily-${date}-run.json`);
 
   console.log(`🔄 Sync daily report for ${date}`);
 
@@ -32,6 +34,14 @@ async function main() {
   }
   if (!existsSync(pdf)) {
     throw new Error(`缺少完整版 PDF: ${pdf}`);
+  }
+  if (!existsSync(runManifestPath)) {
+    throw new Error(`缺少 run manifest: ${runManifestPath}`);
+  }
+
+  const runManifest = JSON.parse(await readFile(runManifestPath, 'utf8'));
+  if (runManifest.status !== 'completed') {
+    throw new Error(`run manifest 状态不是 completed: ${runManifest.status || 'unknown'}`);
   }
 
   const { checkDocumentCompleteness } = await import('./check-completeness.mjs');
@@ -47,7 +57,7 @@ async function main() {
 
   // 同步到仓库：complete 文档 + docs 页面数据
   // 注意：output/*.pdf 可能被 .gitignore 忽略，因此对 complete.pdf 强制 add
-  execSync(`git add ${md} docs/data docs/index.html docs/app.js docs/styles.css scripts/build-pages.mjs`, { stdio: 'inherit' });
+  execSync(`git add ${md} ${runManifestPath} docs/data docs/index.html docs/app.js docs/styles.css scripts/build-pages.mjs`, { stdio: 'inherit' });
   execSync(`git add -f ${pdf}`, { stdio: 'inherit' });
 
   const status = execSync('git status --porcelain', { encoding: 'utf8' }).trim();
