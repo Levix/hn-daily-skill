@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { collectDailyArticles } from './auto-digest.mjs';
 import { checkDocumentCompleteness } from './check-completeness.mjs';
+import { convertMarkdownToPDF } from './md-to-pdf.mjs';
 import { generateArticleSummaryWithRetry } from './lib/providers/openclaw-agent.mjs';
 import { renderCompleteReport } from './lib/renderers/render-complete-report.mjs';
 import { writeRunManifest } from './lib/run-manifest.mjs';
@@ -39,6 +40,7 @@ export async function main(overrides = {}) {
   const outputDir = options.outputDir || DEFAULT_OUTPUT_DIR;
   const collect = options.collectDailyArticles || collectDailyArticles;
   const generate = options.generateArticleSummaryWithRetry || generateArticleSummaryWithRetry;
+  const convert = options.convertMarkdownToPDF || convertMarkdownToPDF;
 
   if (!options.date) {
     throw new Error('date is required');
@@ -81,19 +83,39 @@ export async function main(overrides = {}) {
 
   await writeFile(completeMarkdownPath, markdown, 'utf8');
   const completeness = await checkDocumentCompleteness(completeMarkdownPath);
+
+  if (!completeness.isComplete) {
+    const error = new Error(`completeness check failed: ${completeness.issues.join('; ')}`);
+    await writeRunManifest(runManifestPath, {
+      date: collected.date,
+      articleCount: articles.length,
+      status: 'failed',
+      attempts,
+      completeness,
+      error: serializeError(error)
+    });
+    throw error;
+  }
+
+  const completePdfPath = await convert(completeMarkdownPath, {
+    title: `HN Daily Complete Report - ${collected.date}`
+  });
+
   await writeRunManifest(runManifestPath, {
     date: collected.date,
     articleCount: articles.length,
     status: 'completed',
     attempts,
-    completeness
+    completeness,
+    completePdfPath
   });
 
   return {
     articleCount: articles.length,
     completeMarkdownPath,
     runManifestPath,
-    completeness
+    completeness,
+    completePdfPath
   };
 }
 
