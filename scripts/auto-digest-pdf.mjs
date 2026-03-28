@@ -7,7 +7,7 @@
  */
 
 import { execSync } from 'child_process';
-import { writeFile, readFile, mkdir, unlink } from 'fs/promises';
+import { copyFile, mkdir, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -39,9 +39,6 @@ async function cleanupIncompleteFiles(date) {
   console.log('\n🧹 清理非完整版文件...');
   
   const filesToDelete = [
-    `hn-daily-${date}.md`,
-    `hn-daily-${date}.pdf`,
-    `hn-daily-${date}.html`,
     `hn-daily-${date}-debug.html`,
     `hn-daily-${date}-detailed.md`,
     `hn-daily-${date}-detailed.pdf`,
@@ -206,9 +203,8 @@ HN Daily Auto - 带 PDF 生成的完整自动化脚本
         console.log('\n📤 准备发送到 Discord...');
         const filename = outputPath.split('/').pop();
         
-        // 复制到当前目录
-        const content = await readFile(outputPath, 'utf-8');
-        await writeFile(`./${filename}`, content, 'utf-8');
+        // 复制到当前目录，保持 PDF/HTML 的二进制内容不变
+        await copyFile(outputPath, `./${filename}`);
         
         console.log(`\n💡 请执行以下命令发送文件:`);
         console.log(`   message --action send --filePath "./${filename}" --filename "${filename}" --message "📄 HN Daily ${today} 完整总结"`);
