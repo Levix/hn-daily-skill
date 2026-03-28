@@ -6,12 +6,20 @@ import { parseArticleSummary } from '../parsers/article-summary-parser.mjs';
 const execFileAsync = promisify(execFile);
 
 function extractResponseText(parsed) {
-  const payloadText = parsed?.payloads
+  const payloadText = (parsed?.result?.payloads || parsed?.payloads)
     ?.map((payload) => payload?.text)
     .filter(Boolean)
     .join('\n\n');
 
-  return payloadText || parsed?.response?.output_text || parsed?.output_text || parsed?.message || '';
+  return (
+    payloadText ||
+    parsed?.result?.response?.output_text ||
+    parsed?.result?.output_text ||
+    parsed?.response?.output_text ||
+    parsed?.output_text ||
+    parsed?.message ||
+    ''
+  );
 }
 
 function buildRoutingArgs(options = {}) {
