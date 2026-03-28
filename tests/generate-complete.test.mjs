@@ -5,6 +5,33 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { main } from '../scripts/generate-complete.mjs';
 
+function makeArticle(index) {
+  return {
+    title: `Article ${index}`,
+    url: `https://example.com/${index}`,
+    commentsUrl: `https://news.ycombinator.com/item?id=${index}`,
+    content: `Body ${index}`
+  };
+}
+
+function makeSummary(index) {
+  return {
+    chineseTitle: `标题 ${index}`,
+    oneLiner: `这是第 ${index} 篇文章的一句话总结，覆盖问题背景、关键方案与实际影响，长度足够通过质量检查。`,
+    abstract: `这是第 ${index} 篇详细摘要内容，覆盖背景、实现方式、争议点与潜在影响。为了通过完整性检查，这里补充更多上下文描述，使每篇文章都包含足够长且彼此不同的正文内容。`,
+    keyPoints: [
+      `关键要点 ${index}-1：文章交代了问题来源、上下游约束与主要参与者。`,
+      `关键要点 ${index}-2：作者提出了具体方案，并解释了为什么现有做法不够稳定。`,
+      `关键要点 ${index}-3：社区讨论集中在性能、可靠性与迁移成本之间的取舍。`,
+      `关键要点 ${index}-4：文中给出了若干实践案例，说明方案适用边界与失败模式。`,
+      `关键要点 ${index}-5：从长期维护角度看，这个变化会影响团队协作与系统演进。`
+    ],
+    techInsight: `第 ${index} 篇技术洞察强调接口边界、失败恢复与可观测性，说明为什么工程实现不能只看功能是否可用，还要看后续维护成本和异常处理路径。`,
+    whyHot: `第 ${index} 篇热度原因在于它同时涉及真实需求、工程权衡和可复用经验，既能引发技术讨论，也能帮助团队判断是否值得投入。`,
+    tags: [`Tag${index}`]
+  };
+}
+
 test('generate-complete writes complete markdown and run manifest when all articles succeed', async () => {
   const outputDir = await mkdtemp(join(tmpdir(), 'hn-daily-generate-complete-'));
 
@@ -35,6 +62,26 @@ test('generate-complete writes complete markdown and run manifest when all artic
     assert.equal(result.articleCount, 1);
     assert.match(await readFile(result.completeMarkdownPath, 'utf8'), /### 中文标题/);
     assert.deepEqual(JSON.parse(await readFile(result.runManifestPath, 'utf8')).date, '2099-05-01');
+  } finally {
+    await rm(outputDir, { recursive: true, force: true });
+  }
+});
+
+test('generate-complete returns a passing completeness result for valid complete markdown', async () => {
+  const outputDir = await mkdtemp(join(tmpdir(), 'hn-daily-generate-complete-'));
+
+  try {
+    const result = await main({
+      date: '2099-05-02',
+      outputDir,
+      collectDailyArticles: async () => ({
+        date: '2099-05-02',
+        articles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(makeArticle)
+      }),
+      generateArticleSummaryWithRetry: async ({ article }) => makeSummary(article.title.split(' ').at(-1))
+    });
+
+    assert.equal(result.completeness.isComplete, true, result.completeness.issues?.join('\n'));
   } finally {
     await rm(outputDir, { recursive: true, force: true });
   }

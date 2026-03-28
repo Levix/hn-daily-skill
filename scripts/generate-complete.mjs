@@ -3,6 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { collectDailyArticles } from './auto-digest.mjs';
+import { checkDocumentCompleteness } from './check-completeness.mjs';
 import { generateArticleSummaryWithRetry } from './lib/providers/openclaw-agent.mjs';
 import { renderCompleteReport } from './lib/renderers/render-complete-report.mjs';
 import { writeRunManifest } from './lib/run-manifest.mjs';
@@ -54,16 +55,19 @@ export async function main(overrides = {}) {
   const runManifestPath = getPath(outputDir, collected.date, 'run.json');
 
   await writeFile(completeMarkdownPath, markdown, 'utf8');
+  const completeness = await checkDocumentCompleteness(completeMarkdownPath);
   await writeRunManifest(runManifestPath, {
     date: collected.date,
     articleCount: articles.length,
-    attempts
+    attempts,
+    completeness
   });
 
   return {
     articleCount: articles.length,
     completeMarkdownPath,
-    runManifestPath
+    runManifestPath,
+    completeness
   };
 }
 
