@@ -5,6 +5,15 @@ import { parseArticleSummary } from '../parsers/article-summary-parser.mjs';
 
 const execFileAsync = promisify(execFile);
 
+function extractResponseText(parsed) {
+  const payloadText = parsed?.payloads
+    ?.map((payload) => payload?.text)
+    .filter(Boolean)
+    .join('\n\n');
+
+  return payloadText || parsed?.response?.output_text || parsed?.output_text || parsed?.message || '';
+}
+
 function buildRoutingArgs(options = {}) {
   const agentId = options.agentId || process.env.OPENCLAW_AGENT_ID || process.env.OPENCLAW_AGENT || null;
   const sessionId = options.sessionId || process.env.OPENCLAW_SESSION_ID || null;
@@ -44,7 +53,7 @@ export async function runOpenClawAgent(article, content, options = {}) {
 
   const raw = stdout.trim() ? stdout : stderr;
   const parsed = JSON.parse(raw);
-  const text = parsed?.response?.output_text || parsed?.output_text || parsed?.message || '';
+  const text = extractResponseText(parsed);
   if (!text) {
     throw new Error('empty agent response');
   }
