@@ -374,7 +374,7 @@ function generateFullHTML(content, title) {
  * 主函数：Markdown 转 PDF
  */
 export async function convertMarkdownToPDF(markdownPath, options = {}) {
-  const { outputPath = null, title = 'HN Daily Report' } = options;
+  const { outputPath = null, title = 'HN Daily Report', format = 'pdf' } = options;
   
   console.log(`🔄 正在转换: ${markdownPath}`);
   
@@ -394,7 +394,13 @@ export async function convertMarkdownToPDF(markdownPath, options = {}) {
   
   // 确定输出路径
   const basePath = markdownPath.replace(/\.md$/, '');
-  const finalOutputPath = outputPath || `${basePath}.pdf`;
+  const finalOutputPath = outputPath || (format === 'html' ? `${basePath}.html` : `${basePath}.pdf`);
+
+  if (format === 'html') {
+    await writeFile(finalOutputPath, fullHTML, 'utf-8');
+    console.log(`   ✅ HTML 生成完成: ${finalOutputPath}`);
+    return finalOutputPath;
+  }
   
   // 使用 Playwright 生成 PDF
   console.log('   正在生成 PDF...');
@@ -457,10 +463,12 @@ HN Daily PDF 生成器 - 完整表格支持
   const markdownPath = args[0];
   const outputIdx = args.indexOf('--output');
   const titleIdx = args.indexOf('--title');
+  const formatIdx = args.indexOf('--format');
   
   const options = {
     outputPath: outputIdx !== -1 ? args[outputIdx + 1] : null,
-    title: titleIdx !== -1 ? args[titleIdx + 1] : 'HN Daily Report'
+    title: titleIdx !== -1 ? args[titleIdx + 1] : 'HN Daily Report',
+    format: formatIdx !== -1 ? args[formatIdx + 1] : 'pdf'
   };
   
   convertMarkdownToPDF(markdownPath, options)
