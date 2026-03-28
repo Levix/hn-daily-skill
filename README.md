@@ -2,18 +2,17 @@
 
 当前仓库分为两条链路：
 
-1. 草稿生成链路：抓取 HN Daily，产出草稿 Markdown/PDF/HTML
-2. 发布链路：只认 `output/hn-daily-YYYY-MM-DD-complete.{md,pdf}`，并同步到 `docs/` / GitHub Pages
+1. 草稿链路：`auto-digest.mjs` 抓取 HN Daily，产出草稿 Markdown
+2. complete 链路：`generate-complete.mjs` 逐篇调用 OpenClaw agent 生成完整中文总结，产出 `*-complete.md`、`*-complete.pdf` 和 `*-run.json`
 
-仓库目前**不会**自动把草稿升级为完整中文总结。`*-complete.*` 仍然是发布源和唯一权威产物。
+发布源和唯一权威产物是 `output/hn-daily-YYYY-MM-DD-complete.{md,pdf}`。
 
 ## 当前产物约定
 
 - 草稿 Markdown：`output/hn-daily-YYYY-MM-DD.md`
-- 草稿 PDF：`output/hn-daily-YYYY-MM-DD.pdf`
-- 草稿 HTML：`output/hn-daily-YYYY-MM-DD.html`
 - 最终发布 Markdown：`output/hn-daily-YYYY-MM-DD-complete.md`
 - 最终发布 PDF：`output/hn-daily-YYYY-MM-DD-complete.pdf`
+- 运行记录：`output/hn-daily-YYYY-MM-DD-run.json`
 
 ## 核心命令
 
@@ -21,10 +20,16 @@
 # 生成草稿 Markdown
 node scripts/auto-digest.mjs --date 2026-03-06
 
-# 生成草稿 PDF / Markdown / HTML
+# 生成完整发布产物
+node scripts/generate-complete.mjs --date 2026-03-06
+
+# 兼容包装脚本：输出 complete PDF / Markdown / HTML
 node scripts/auto-digest-pdf.mjs --date 2026-03-06 --format pdf
 node scripts/auto-digest-pdf.mjs --date 2026-03-06 --format md
 node scripts/auto-digest-pdf.mjs --date 2026-03-06 --format html
+
+# 一次跑完整生成 + Pages 同步
+npm run daily:pipeline -- --date 2026-03-06
 
 # 检查 complete Markdown（仅支持 Markdown）
 node scripts/check-completeness.mjs output/hn-daily-2026-03-06-complete.md
@@ -39,16 +44,14 @@ node scripts/sync-pages-and-push.mjs --date 2026-03-06
 ## 发布流程
 
 ```bash
-# 1. 准备当天 complete 文件
-ls output/hn-daily-2026-03-06-complete.md
-ls output/hn-daily-2026-03-06-complete.pdf
+# 1. 生成当天 complete 产物
+node scripts/generate-complete.mjs --date 2026-03-06
 
-# 2. 检查完整性
-node scripts/check-completeness.mjs output/hn-daily-2026-03-06-complete.md
-
-# 3. 构建并同步 Pages
-npm run build:pages
+# 2. 构建并同步 Pages
 node scripts/sync-pages-and-push.mjs --date 2026-03-06
+
+# 或者直接一步完成
+npm run daily:pipeline -- --date 2026-03-06
 ```
 
 ## GitHub Pages
@@ -69,6 +72,7 @@ Pages 配置方式：
 
 ## 已知限制
 
-- `auto-digest.mjs` / `auto-digest-pdf.mjs` 当前生成的是草稿，不是可发布的 complete 内容
+- `auto-digest.mjs` 仍然是草稿链路，不参与发布
+- `auto-digest-pdf.mjs` 现在是 complete 包装器，内部直接调用 `generate-complete.mjs`
 - `check-completeness.mjs` 只支持检查 Markdown，不支持直接检查 PDF
-- `sync-pages-and-push.mjs` 会拒绝缺少 complete 文件或完整性检查失败的日期
+- `sync-pages-and-push.mjs` 会拒绝缺少 complete 文件、完整性检查失败或 `run.json` 状态不是 `completed` 的日期
