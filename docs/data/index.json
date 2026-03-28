@@ -8,6 +8,13 @@
       "pdf": "data/2026-03-27.pdf"
     },
     {
+      "date": "2026-03-26",
+      "title": "Hacker News Daily 完整总结 - 2026-03-26",
+      "articleCount": 10,
+      "md": "data/2026-03-26.md",
+      "pdf": "data/2026-03-26.pdf"
+    },
+    {
       "date": "2026-03-25",
       "title": "Hacker News Daily 完整总结 - 2026-03-25",
       "articleCount": 10,
@@ -113,5 +120,5 @@
       "pdf": "data/2026-03-06.pdf"
     }
   ],
-  "generatedAt": "2026-03-28T14:22:40.854Z"
+  "generatedAt": "2026-03-28T14:59:18.661Z"
 }

@@ -1,0 +1,69 @@
+{
+  "date": "2026-03-26",
+  "articleCount": 10,
+  "status": "completed",
+  "attempts": [
+    {
+      "index": 0,
+      "title": "Miscellanea: The War in Iran",
+      "status": "success"
+    },
+    {
+      "index": 1,
+      "title": "Why so many control rooms were seafoam green (2025)",
+      "status": "success"
+    },
+    {
+      "index": 2,
+      "title": "ARC-AGI-3",
+      "status": "success"
+    },
+    {
+      "index": 3,
+      "title": "Personal Encyclopedias",
+      "status": "success"
+    },
+    {
+      "index": 4,
+      "title": "Running Tesla Model 3's computer on my desk using parts from crashed cars",
+      "status": "success"
+    },
+    {
+      "index": 5,
+      "title": "Shell Tricks That Make Life Easier (and Save Your Sanity)",
+      "status": "success"
+    },
+    {
+      "index": 6,
+      "title": "End of \\\"Chat Control\\\": EU parliament stops mass surveillance",
+      "status": "success"
+    },
+    {
+      "index": 7,
+      "title": "European Parliament decided that Chat Control 1.0 must stop",
+      "status": "success"
+    },
+    {
+      "index": 8,
+      "title": "Moving from GitHub to Codeberg, for lazy people",
+      "status": "success"
+    },
+    {
+      "index": 9,
+      "title": "We haven't seen the worst of what gambling and prediction markets will do",
+      "status": "success"
+    }
+  ],
+  "completeness": {
+    "filePath": "/Users/leeeeeee/.openclaw/workspace-discord/skills/hn-daily-skill/output/hn-daily-2026-03-26-complete.md",
+    "isComplete": true,
+    "issues": [],
+    "stats": {
+      "fileSize": 10935,
+      "sectionsFound": 5,
+      "oneLinerCount": 10,
+      "articleCount": 10
+    }
+  },
+  "completePdfPath": "/Users/leeeeeee/.openclaw/workspace-discord/skills/hn-daily-skill/output/hn-daily-2026-03-26-complete.pdf"
+}
