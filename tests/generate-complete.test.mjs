@@ -42,25 +42,13 @@ test('generate-complete writes complete markdown and run manifest when all artic
       outputDir,
       collectDailyArticles: async () => ({
         date: '2099-05-01',
-        articles: [{
-          title: 'A',
-          url: 'https://example.com/a',
-          commentsUrl: 'https://news.ycombinator.com/item?id=1',
-          content: 'Body'
-        }]
+        articles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(makeArticle)
       }),
-      generateArticleSummaryWithRetry: async () => ({
-        chineseTitle: '标题',
-        oneLiner: '这是足够长的一句话总结。',
-        abstract: '详细摘要内容足够长。',
-        keyPoints: ['1', '2', '3', '4', '5'],
-        techInsight: '技术洞察。',
-        whyHot: '热度原因。',
-        tags: ['A']
-      })
+      generateArticleSummaryWithRetry: async ({ article }) => makeSummary(article.title.split(' ').at(-1)),
+      convertMarkdownToPDF: async () => join(outputDir, 'hn-daily-2099-05-01-complete.pdf')
     });
 
-    assert.equal(result.articleCount, 1);
+    assert.equal(result.articleCount, 10);
     assert.match(await readFile(result.completeMarkdownPath, 'utf8'), /### 中文标题/);
     assert.deepEqual(JSON.parse(await readFile(result.runManifestPath, 'utf8')).date, '2099-05-01');
   } finally {
@@ -79,7 +67,8 @@ test('generate-complete returns a passing completeness result for valid complete
         date: '2099-05-02',
         articles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(makeArticle)
       }),
-      generateArticleSummaryWithRetry: async ({ article }) => makeSummary(article.title.split(' ').at(-1))
+      generateArticleSummaryWithRetry: async ({ article }) => makeSummary(article.title.split(' ').at(-1)),
+      convertMarkdownToPDF: async () => join(outputDir, 'hn-daily-2099-05-02-complete.pdf')
     });
 
     assert.equal(result.completeness.isComplete, true, result.completeness.issues?.join('\n'));
@@ -120,6 +109,69 @@ test('generate-complete writes a failure manifest and stops when article generat
     assert.equal(manifest.attempts[1].status, 'failed');
     assert.match(manifest.error.message, /summary failed after retries/);
     await assert.rejects(access(completeMarkdownPath, constants.F_OK));
+  } finally {
+    await rm(outputDir, { recursive: true, force: true });
+  }
+});
+
+test('generate-complete renders a pdf artifact after completeness passes', async () => {
+  const outputDir = await mkdtemp(join(tmpdir(), 'hn-daily-generate-complete-'));
+  const conversions = [];
+
+  try {
+    const result = await main({
+      date: '2099-05-04',
+      outputDir,
+      collectDailyArticles: async () => ({
+        date: '2099-05-04',
+        articles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(makeArticle)
+      }),
+      generateArticleSummaryWithRetry: async ({ article }) => makeSummary(article.title.split(' ').at(-1)),
+      convertMarkdownToPDF: async (markdownPath, options) => {
+        conversions.push({ markdownPath, options });
+        return join(outputDir, 'hn-daily-2099-05-04-complete.pdf');
+      }
+    });
+
+    assert.equal(result.completePdfPath, join(outputDir, 'hn-daily-2099-05-04-complete.pdf'));
+    assert.equal(conversions.length, 1);
+    assert.equal(conversions[0].markdownPath, join(outputDir, 'hn-daily-2099-05-04-complete.md'));
+  } finally {
+    await rm(outputDir, { recursive: true, force: true });
+  }
+});
+
+test('generate-complete refuses to render pdf when completeness checks fail', async () => {
+  const outputDir = await mkdtemp(join(tmpdir(), 'hn-daily-generate-complete-'));
+  let conversionCount = 0;
+
+  try {
+    await assert.rejects(
+      main({
+        date: '2099-05-05',
+        outputDir,
+        collectDailyArticles: async () => ({
+          date: '2099-05-05',
+          articles: [makeArticle(1)]
+        }),
+        generateArticleSummaryWithRetry: async () => ({
+          chineseTitle: '标题',
+          oneLiner: '这是足够长的一句话总结。',
+          abstract: '详细摘要内容足够长。',
+          keyPoints: ['1', '2', '3', '4', '5'],
+          techInsight: '技术洞察。',
+          whyHot: '热度原因。',
+          tags: ['A']
+        }),
+        convertMarkdownToPDF: async () => {
+          conversionCount += 1;
+          return join(outputDir, 'should-not-exist.pdf');
+        }
+      }),
+      /completeness check failed/
+    );
+
+    assert.equal(conversionCount, 0);
   } finally {
     await rm(outputDir, { recursive: true, force: true });
   }
