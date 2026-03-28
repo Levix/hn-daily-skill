@@ -1,0 +1,49 @@
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { buildCompleteArticlePrompt } from '../prompts/complete-article-prompt.mjs';
+import { parseArticleSummary } from '../parsers/article-summary-parser.mjs';
+
+const execFileAsync = promisify(execFile);
+
+export async function runOpenClawAgent(article, content, options = {}) {
+  const { timeoutSeconds = 600, thinking = 'medium' } = options;
+  const prompt = buildCompleteArticlePrompt(article, content);
+  const { stdout } = await execFileAsync('openclaw', [
+    'agent',
+    '--json',
+    '--message',
+    prompt,
+    '--timeout',
+    String(timeoutSeconds),
+    '--thinking',
+    thinking
+  ]);
+
+  const parsed = JSON.parse(stdout);
+  const text = parsed?.response?.output_text || parsed?.output_text || parsed?.message || '';
+  if (!text) {
+    throw new Error('empty agent response');
+  }
+  return text;
+}
+
+export async function generateArticleSummaryWithRetry({
+  runner = runOpenClawAgent,
+  article,
+  content,
+  retries = 2,
+  options = {}
+}) {
+  let lastError;
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      const raw = await runner(article, content, options);
+      return parseArticleSummary(raw);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError;
+}
