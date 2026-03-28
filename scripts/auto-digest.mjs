@@ -173,6 +173,23 @@ async function fetchArticleContent(url) {
   }
 }
 
+export async function collectDailyArticles({ date, maxArticles = CONFIG.maxArticles }) {
+  const pageUrl = `${CONFIG.baseUrl}/${date}.html`;
+  const html = await fetchWithTimeout(pageUrl);
+  const parsedArticles = parseHNDailyPage(html);
+  const articles = parsedArticles.slice(0, maxArticles);
+  const enrichedArticles = [];
+
+  for (const article of articles) {
+    enrichedArticles.push({
+      ...article,
+      content: await fetchArticleContent(article.url)
+    });
+  }
+
+  return { date, pageUrl, articles: enrichedArticles };
+}
+
 // ============================================================================
 // 分类
 // ============================================================================
@@ -424,36 +441,36 @@ HN Daily Auto - 自动获取、总结、发送 HN Daily
   }
   
   // 1. 获取文章列表
-  const pageUrl = `${CONFIG.baseUrl}/${targetDate}.html`;
   console.log(`📡 正在获取文章列表...`);
   
-  let articles = [];
+  let collected;
   try {
-    const html = await fetchWithTimeout(pageUrl);
-    articles = parseHNDailyPage(html);
-    console.log(`   ✅ 找到 ${articles.length} 篇文章\n`);
+    collected = await collectDailyArticles({
+      date: targetDate,
+      maxArticles: options.maxArticles
+    });
+    console.log(`   ✅ 找到 ${collected.articles.length} 篇文章\n`);
   } catch (error) {
     console.error(`   ❌ 获取失败: ${error.message}`);
     process.exit(1);
   }
   
-  if (articles.length === 0) {
+  if (collected.articles.length === 0) {
     console.log('⚠️ 未找到任何文章');
     process.exit(1);
   }
   
   // 2. 抓取文章内容
   console.log('📄 正在抓取文章内容...\n');
+  const articles = collected.articles.map(({ content, ...article }) => article);
   const summaries = [];
   
-  for (let i = 0; i < articles.length; i++) {
-    const article = articles[i];
+  for (let i = 0; i < collected.articles.length; i++) {
+    const article = collected.articles[i];
     console.log(`   [${i + 1}/${articles.length}] ${article.title.slice(0, 50)}...`);
+    summaries.push({ article, content: article.content });
     
-    const content = await fetchArticleContent(article.url);
-    summaries.push({ article, content });
-    
-    if (i < articles.length - 1) await new Promise(r => setTimeout(r, 500));
+    if (i < collected.articles.length - 1) await new Promise(r => setTimeout(r, 500));
   }
   
   console.log(`\n✅ 内容抓取完成\n`);
