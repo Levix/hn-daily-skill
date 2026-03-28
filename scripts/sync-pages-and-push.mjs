@@ -18,8 +18,8 @@ function yesterday() {
   return d.toISOString().slice(0, 10);
 }
 
-async function main() {
-  const date = getArg('--date') || yesterday();
+export async function main(overrides = {}) {
+  const date = overrides.date || getArg('--date') || yesterday();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     throw new Error(`非法日期参数: ${date}（仅支持 YYYY-MM-DD）`);
   }
@@ -72,7 +72,9 @@ async function main() {
   console.log('🚀 已同步到 GitHub 并更新 docs（GitHub Pages）');
 }
 
-main().catch((err) => {
-  console.error(`❌ sync failed: ${err.message}`);
-  process.exit(1);
-});
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((err) => {
+    console.error(`❌ sync failed: ${err.message}`);
+    process.exit(1);
+  });
+}
