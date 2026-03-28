@@ -1,0 +1,64 @@
+{
+  "date": "2026-03-27",
+  "articleCount": 9,
+  "status": "completed",
+  "attempts": [
+    {
+      "index": 0,
+      "title": "My minute-by-minute response to the LiteLLM malware attack",
+      "status": "success"
+    },
+    {
+      "index": 1,
+      "title": "$500 GPU outperforms Claude Sonnet on coding benchmarks",
+      "status": "success"
+    },
+    {
+      "index": 2,
+      "title": "Apple discontinues the Mac Pro",
+      "status": "success"
+    },
+    {
+      "index": 3,
+      "title": "Judge blocks Pentagon effort to 'punish' Anthropic with supply chain risk label",
+      "status": "success"
+    },
+    {
+      "index": 4,
+      "title": "A Faster Alternative to Jq",
+      "status": "success"
+    },
+    {
+      "index": 5,
+      "title": "Hold on to Your Hardware",
+      "status": "success"
+    },
+    {
+      "index": 6,
+      "title": "The 'paperwork flood': How I drowned a bureaucrat before dinner",
+      "status": "success"
+    },
+    {
+      "index": 7,
+      "title": "People inside Microsoft are fighting to drop mandatory Microsoft Account",
+      "status": "success"
+    },
+    {
+      "index": 8,
+      "title": "Anatomy of the .claude/ folder",
+      "status": "success"
+    }
+  ],
+  "completeness": {
+    "filePath": "/Users/leeeeeee/.openclaw/workspace-discord/skills/hn-daily-skill/output/hn-daily-2026-03-27-complete.md",
+    "isComplete": true,
+    "issues": [],
+    "stats": {
+      "fileSize": 9688,
+      "sectionsFound": 5,
+      "oneLinerCount": 9,
+      "articleCount": 9
+    }
+  },
+  "completePdfPath": "/Users/leeeeeee/.openclaw/workspace-discord/skills/hn-daily-skill/output/hn-daily-2026-03-27-complete.pdf"
+}
