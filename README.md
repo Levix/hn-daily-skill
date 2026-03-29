@@ -32,6 +32,17 @@
 
 完整流水线如下：
 
+```mermaid
+flowchart TD
+    A[HN Daily source] --> B[collectDailyArticles]
+    B --> C[OpenClaw agent per article]
+    C --> D[renderCompleteReport]
+    D --> E[check-completeness]
+    E --> F[export PDF]
+    F --> G[sync to docs]
+    G --> H[GitHub Pages]
+```
+
 ```text
 HN Daily source
   -> collectDailyArticles
@@ -231,4 +242,4 @@ GitHub Pages 推荐配置：
 
 ## License
 
-当前仓库未声明许可证。如需对外复用，请先补充 License 文件和使用条款。
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
