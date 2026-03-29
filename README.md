@@ -201,13 +201,6 @@ GitHub Pages 推荐配置：
 3. Branch 选择 `main`
 4. Folder 选择 `/docs`
 
-如果需要为 README、发布说明或排障记录生成页面可视化素材，可以使用 `agent-browser` 访问
-<https://levix.github.io/hn-daily-skill/>，获取：
-
-- 首页截图
-- 示例页面预览
-- 发布后页面是否已更新的可视化确认
-
 ## Troubleshooting
 
 ### Page content is not updated
