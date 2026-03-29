@@ -1,8 +1,12 @@
 # HN Daily Skill
 
+[![Pages](https://img.shields.io/badge/Pages-live-2ea44f?logo=githubpages)](https://levix.github.io/hn-daily-skill/)
+[![Refresh Pages Data](https://github.com/Levix/hn-daily-skill/actions/workflows/pages-refresh.yml/badge.svg)](https://github.com/Levix/hn-daily-skill/actions/workflows/pages-refresh.yml)
+
 一个将 [Hacker News Daily](https://www.daemonology.net/hn-daily/) 热门文章自动生成中文完整总结、导出 PDF，并发布到 GitHub Pages 的自动化流水线。
 
 在线阅读地址：<https://levix.github.io/hn-daily-skill/>
+源码仓库：<https://github.com/Levix/hn-daily-skill>
 
 ## Overview
 
