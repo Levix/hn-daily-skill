@@ -5,6 +5,8 @@
 
 一个将 [Hacker News Daily](https://www.daemonology.net/hn-daily/) 热门文章自动生成中文完整总结、导出 PDF，并发布到 GitHub Pages 的自动化流水线。
 
+<img src="docs/assets/homepage-preview.png" alt="HN Daily homepage preview" width="1200" />
+
 在线阅读地址：<https://levix.github.io/hn-daily-skill/>
 源码仓库：<https://github.com/Levix/hn-daily-skill>
 
