@@ -1,6 +1,15 @@
 name: Refresh Pages Data
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - 'output/*-complete.md'
+      - 'scripts/build-pages.mjs'
+      - 'package.json'
+      - 'package-lock.json'
   workflow_dispatch:
   schedule:
     # 每天 09:10 Asia/Shanghai ~= 01:10 UTC
