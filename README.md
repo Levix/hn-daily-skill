@@ -78,6 +78,7 @@ docs/        GitHub Pages site and published daily reports
 - Node.js 20+
 - 可用的 `openclaw` CLI
 - 可访问的 OpenClaw agent 运行环境
+- 如需通过代理访问浏览器页面，可使用 `agent-browser`
 - 对目标仓库 `main` 分支的推送权限
 - 已启用 GitHub Pages，并配置为从 `main:/docs` 发布
 
@@ -93,6 +94,12 @@ Provider 也支持这些环境变量：
 - `OPENCLAW_SESSION_ID`
 - `OPENCLAW_TO`
 - `OPENCLAW_CHANNEL`
+
+`agent-browser` 不是完整生成链路的硬依赖，但在以下场景有用：
+
+- 访问和验证 GitHub Pages 站点
+- 检查需要浏览器渲染的页面行为
+- 辅助排查发布后页面未更新的问题
 
 ## Quick Start
 
