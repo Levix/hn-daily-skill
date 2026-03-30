@@ -13,6 +13,10 @@ body {
   margin: 0;
   color: var(--text);
   background: #fff;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100vh;
+  overflow: hidden;
 }
 
 header {
@@ -30,13 +34,14 @@ header p { margin: 0; color: var(--muted); }
 main {
   display: grid;
   grid-template-columns: 280px 1fr;
-  min-height: calc(100vh - 80px);
+  min-height: 0;
 }
 
 aside {
   border-right: 1px solid #eee;
   padding: 16px;
-  overflow: auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 aside h2 { margin: 0 0 10px; font-size: 16px; }
@@ -62,7 +67,8 @@ aside h2 { margin: 0 0 10px; font-size: 16px; }
 
 section {
   padding: 20px;
-  overflow: auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .meta { color: var(--muted); margin-bottom: 12px; }
@@ -121,6 +127,12 @@ section {
   main {
     grid-template-columns: 1fr;
     min-height: auto;
+  }
+
+  body {
+    display: block;
+    height: auto;
+    overflow: visible;
   }
 
   aside {
