@@ -1,0 +1,64 @@
+{
+  "date": "2026-03-29",
+  "articleCount": 9,
+  "status": "completed",
+  "attempts": [
+    {
+      "index": 0,
+      "title": "Cocoa-Way – Native macOS Wayland compositor for running Linux apps seamlessly",
+      "status": "success"
+    },
+    {
+      "index": 1,
+      "title": "I Built an Open-World Engine for the N64 [video]",
+      "status": "success"
+    },
+    {
+      "index": 2,
+      "title": "CSS is DOOMed",
+      "status": "success"
+    },
+    {
+      "index": 3,
+      "title": "South Korea Mandates Solar Panels for Public Parking Lots",
+      "status": "success"
+    },
+    {
+      "index": 4,
+      "title": "Nitrile and latex gloves may cause overestimation of microplastics",
+      "status": "success"
+    },
+    {
+      "index": 5,
+      "title": "Police used AI facial recognition to wrongly arrest TN woman for crimes in ND",
+      "status": "success"
+    },
+    {
+      "index": 6,
+      "title": "Say No to Palantir in Europe",
+      "status": "success"
+    },
+    {
+      "index": 7,
+      "title": "Voyager 1 runs on 69 KB of memory and an 8-track tape recorder",
+      "status": "success"
+    },
+    {
+      "index": 8,
+      "title": "ChatGPT won't let you type until Cloudflare reads your React state",
+      "status": "success"
+    }
+  ],
+  "completeness": {
+    "filePath": "/Users/leeeeeee/.openclaw/workspace-discord/skills/hn-daily-skill/output/hn-daily-2026-03-29-complete.md",
+    "isComplete": true,
+    "issues": [],
+    "stats": {
+      "fileSize": 9438,
+      "sectionsFound": 5,
+      "oneLinerCount": 9,
+      "articleCount": 9
+    }
+  },
+  "completePdfPath": "/Users/leeeeeee/.openclaw/workspace-discord/skills/hn-daily-skill/output/hn-daily-2026-03-29-complete.pdf"
+}
