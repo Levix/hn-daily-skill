@@ -67,7 +67,33 @@ export async function main(overrides = {}) {
   }
 
   execSync(`git commit -m "chore(daily): sync ${date} report to pages"`, { stdio: 'inherit' });
-  execSync('git push origin main', { stdio: 'inherit' });
+
+  try {
+    execSync('git push origin main', { stdio: 'pipe', encoding: 'utf8' });
+  } catch (pushError) {
+    const pushDetails = [pushError?.stdout, pushError?.stderr, pushError?.message]
+      .filter(Boolean)
+      .join('\n');
+    const isNonFastForward = /non-fast-forward|fetch first|rejected/i.test(pushDetails);
+
+    if (!isNonFastForward) {
+      throw pushError;
+    }
+
+    console.log('⚠️ push 被拒绝（远端领先），尝试先同步远端再重试...');
+    try {
+      execSync('git pull --rebase origin main', { stdio: 'inherit' });
+    } catch (rebaseError) {
+      try {
+        execSync('git rebase --abort', { stdio: 'inherit' });
+      } catch {
+        // ignore abort failure when no rebase is active
+      }
+      throw new Error(`同步远端并 rebase 失败，请手动处理冲突后重试：${rebaseError.message}`);
+    }
+
+    execSync('git push origin main', { stdio: 'inherit' });
+  }
 
   console.log('🚀 已同步到 GitHub 并更新 docs（GitHub Pages）');
 }
