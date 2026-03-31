@@ -18,6 +18,24 @@ function yesterday() {
   return d.toISOString().slice(0, 10);
 }
 
+function getExecErrorDetails(error) {
+  return [error?.stdout, error?.stderr, error?.message]
+    .filter(Boolean)
+    .join('\n');
+}
+
+function isNonFastForwardError(details) {
+  return /non-fast-forward|fetch first|rejected/i.test(details);
+}
+
+function isTransientPushError(details) {
+  return /SSL_ERROR_SYSCALL|Connection timed out|Could not resolve host|Failed to connect|Connection reset|Connection refused|remote end hung up unexpectedly|unexpected disconnect|RPC failed|HTTP\/2 stream .* was not closed cleanly|Operation timed out/i.test(details);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function main(overrides = {}) {
   const date = overrides.date || getArg('--date') || yesterday();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -68,31 +86,40 @@ export async function main(overrides = {}) {
 
   execSync(`git commit -m "chore(daily): sync ${date} report to pages"`, { stdio: 'inherit' });
 
-  try {
-    execSync('git push origin main', { stdio: 'pipe', encoding: 'utf8' });
-  } catch (pushError) {
-    const pushDetails = [pushError?.stdout, pushError?.stderr, pushError?.message]
-      .filter(Boolean)
-      .join('\n');
-    const isNonFastForward = /non-fast-forward|fetch first|rejected/i.test(pushDetails);
+  const maxPushAttempts = 3;
+  let attempt = 1;
 
-    if (!isNonFastForward) {
-      throw pushError;
-    }
-
-    console.log('⚠️ push 被拒绝（远端领先），尝试先同步远端再重试...');
+  while (attempt <= maxPushAttempts) {
     try {
-      execSync('git pull --rebase origin main', { stdio: 'inherit' });
-    } catch (rebaseError) {
-      try {
-        execSync('git rebase --abort', { stdio: 'inherit' });
-      } catch {
-        // ignore abort failure when no rebase is active
-      }
-      throw new Error(`同步远端并 rebase 失败，请手动处理冲突后重试：${rebaseError.message}`);
-    }
+      execSync('git push origin main', { stdio: 'pipe', encoding: 'utf8' });
+      break;
+    } catch (pushError) {
+      const pushDetails = getExecErrorDetails(pushError);
 
-    execSync('git push origin main', { stdio: 'inherit' });
+      if (isNonFastForwardError(pushDetails)) {
+        console.log('⚠️ push 被拒绝（远端领先），尝试先同步远端再重试...');
+        try {
+          execSync('git pull --rebase origin main', { stdio: 'inherit' });
+        } catch (rebaseError) {
+          try {
+            execSync('git rebase --abort', { stdio: 'inherit' });
+          } catch {
+            // ignore abort failure when no rebase is active
+          }
+          throw new Error(`同步远端并 rebase 失败，请手动处理冲突后重试：${rebaseError.message}`);
+        }
+
+        continue;
+      }
+
+      if (!isTransientPushError(pushDetails) || attempt === maxPushAttempts) {
+        throw pushError;
+      }
+
+      console.log(`⚠️ git push 遇到瞬时网络错误，准备重试（${attempt}/${maxPushAttempts - 1}）...`);
+      await sleep(attempt * 1000);
+      attempt += 1;
+    }
   }
 
   console.log('🚀 已同步到 GitHub 并更新 docs（GitHub Pages）');

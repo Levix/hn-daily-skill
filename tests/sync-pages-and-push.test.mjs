@@ -8,12 +8,17 @@ import { spawnSync } from 'node:child_process';
 async function createSyncFixture({ date, manifest }) {
   const tempRoot = await mkdtemp(join(tmpdir(), 'hn-daily-sync-pages-'));
   const remoteRoot = await mkdtemp(join(tmpdir(), 'hn-daily-sync-remote-'));
+  const binDir = join(tempRoot, 'bin');
   const scriptsDir = join(tempRoot, 'scripts');
   const outputDir = join(tempRoot, 'output');
   const docsDataDir = join(tempRoot, 'docs', 'data');
   const remoteRepo = join(remoteRoot, 'origin.git');
   const sourceScript = await readFile(join(process.cwd(), 'scripts', 'sync-pages-and-push.mjs'), 'utf8');
+  const realGit = spawnSync('/bin/zsh', ['-lc', 'command -v git'], {
+    encoding: 'utf8'
+  }).stdout.trim();
 
+  await mkdir(binDir, { recursive: true });
   await mkdir(scriptsDir, { recursive: true });
   await mkdir(docsDataDir, { recursive: true });
 
@@ -34,6 +39,21 @@ await writeFile(join(process.cwd(), 'docs', 'index.html'), '<html></html>', 'utf
 await writeFile(join(process.cwd(), 'docs', 'app.js'), 'console.log(\"ok\")', 'utf8');
 await writeFile(join(process.cwd(), 'docs', 'styles.css'), 'body{}', 'utf8');
 `, 'utf8');
+  await writeFile(join(binDir, 'git'), `#!/bin/sh
+REAL_GIT="${realGit}"
+FIRST_PUSH_MARKER="${join(tempRoot, '.first-push-failed')}"
+
+if [ "$SYNC_PAGES_FAIL_FIRST_PUSH" = "1" ] && [ "$1" = "push" ] && [ "$2" = "origin" ] && [ "$3" = "main" ]; then
+  if [ ! -f "$FIRST_PUSH_MARKER" ]; then
+    : > "$FIRST_PUSH_MARKER"
+    echo "fatal: unable to access 'https://github.com/Levix/hn-daily-skill.git/': LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to github.com:443 " >&2
+    exit 128
+  fi
+fi
+
+exec "$REAL_GIT" "$@"
+`, 'utf8');
+  spawnSync('chmod', ['+x', join(binDir, 'git')], { cwd: tempRoot, encoding: 'utf8' });
 
   spawnSync('git', ['init', '-b', 'main'], { cwd: tempRoot, encoding: 'utf8' });
   spawnSync('git', ['config', 'user.name', 'Test User'], { cwd: tempRoot, encoding: 'utf8' });
@@ -49,7 +69,7 @@ await writeFile(join(process.cwd(), 'docs', 'styles.css'), 'body{}', 'utf8');
   await writeFile(join(outputDir, `hn-daily-${date}-complete.pdf`), Buffer.from([0x25, 0x50, 0x44, 0x46]));
   await writeFile(join(outputDir, `hn-daily-${date}-run.json`), JSON.stringify(manifest), 'utf8');
 
-  return { tempRoot, remoteRoot };
+  return { tempRoot, remoteRoot, binDir };
 }
 
 test('sync-pages-and-push refuses reports whose run manifest is not completed', async () => {
@@ -100,6 +120,35 @@ test('sync-pages-and-push stages the completed run manifest alongside report art
       encoding: 'utf8'
     });
     assert.match(lastCommitFiles.stdout, new RegExp(`output/hn-daily-${date}-run.json`));
+  } finally {
+    await rm(tempRoot, { recursive: true, force: true });
+    await rm(remoteRoot, { recursive: true, force: true });
+  }
+});
+
+test('sync-pages-and-push retries transient git push failures and eventually succeeds', async () => {
+  const date = '2099-05-08';
+  const { tempRoot, remoteRoot, binDir } = await createSyncFixture({
+    date,
+    manifest: {
+      date,
+      status: 'completed'
+    }
+  });
+
+  try {
+    const result = spawnSync(process.execPath, ['scripts/sync-pages-and-push.mjs', '--date', date], {
+      cwd: tempRoot,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PATH: `${binDir}:${process.env.PATH}`,
+        SYNC_PAGES_FAIL_FIRST_PUSH: '1'
+      }
+    });
+
+    assert.equal(result.status, 0, result.stderr + result.stdout);
+    assert.match(result.stdout + result.stderr, /网络|push/i);
   } finally {
     await rm(tempRoot, { recursive: true, force: true });
     await rm(remoteRoot, { recursive: true, force: true });
