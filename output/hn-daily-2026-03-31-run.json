@@ -1,0 +1,69 @@
+{
+  "date": "2026-03-31",
+  "articleCount": 10,
+  "status": "completed",
+  "attempts": [
+    {
+      "index": 0,
+      "title": "Do your own writing",
+      "status": "success"
+    },
+    {
+      "index": 1,
+      "title": "CodingFont: A game to help you pick a coding font",
+      "status": "success"
+    },
+    {
+      "index": 2,
+      "title": "Artemis II is not safe to fly",
+      "status": "success"
+    },
+    {
+      "index": 3,
+      "title": "Axios compromised on NPM – Malicious versions drop remote access trojan",
+      "status": "success"
+    },
+    {
+      "index": 4,
+      "title": "Ollama is now powered by MLX on Apple Silicon in preview",
+      "status": "success"
+    },
+    {
+      "index": 5,
+      "title": "GitHub backs down, kills Copilot pull-request ads after backlash",
+      "status": "success"
+    },
+    {
+      "index": 6,
+      "title": "Claude Code's source code has been leaked via a map file in their NPM registry",
+      "status": "success"
+    },
+    {
+      "index": 7,
+      "title": "The Claude Code Source Leak: fake tools, frustration regexes, undercover mode",
+      "status": "success"
+    },
+    {
+      "index": 8,
+      "title": "Microsoft: Copilot is for entertainment purposes only",
+      "status": "success"
+    },
+    {
+      "index": 9,
+      "title": "Oracle slashes 30k jobs",
+      "status": "success"
+    }
+  ],
+  "completeness": {
+    "filePath": "/Users/leeeeeee/.openclaw/workspace-discord/skills/hn-daily-skill/output/hn-daily-2026-03-31-complete.md",
+    "isComplete": true,
+    "issues": [],
+    "stats": {
+      "fileSize": 10203,
+      "sectionsFound": 5,
+      "oneLinerCount": 10,
+      "articleCount": 10
+    }
+  },
+  "completePdfPath": "/Users/leeeeeee/.openclaw/workspace-discord/skills/hn-daily-skill/output/hn-daily-2026-03-31-complete.pdf"
+}
