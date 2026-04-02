@@ -41,7 +41,8 @@ HN Daily Daily Pipeline
   }
 
   const result = await generateComplete({ date });
-  await syncPagesAndPush({ date });
+  const syncDate = result?.date || date;
+  await syncPagesAndPush({ date: syncDate });
   return result;
 }
 

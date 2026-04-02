@@ -35,12 +35,68 @@ function serializeError(error) {
   };
 }
 
+function shiftDate(dateString, deltaDays) {
+  const base = new Date(`${dateString}T00:00:00Z`);
+  if (Number.isNaN(base.getTime())) {
+    throw new Error(`invalid date: ${dateString}`);
+  }
+
+  base.setUTCDate(base.getUTCDate() + deltaDays);
+  return base.toISOString().slice(0, 10);
+}
+
+function isHttp404(error) {
+  const message = String(error?.message || '');
+  return /\b404\b/.test(message) || /HTTP\s*404/i.test(message);
+}
+
+async function collectDailyArticlesWithFallback({ date, collect, fallbackDays }) {
+  let lastError;
+
+  for (let offset = 0; offset <= fallbackDays; offset += 1) {
+    const candidateDate = shiftDate(date, -offset);
+    try {
+      const collected = await collect({ date: candidateDate });
+      return { collected, fallbackOffset: offset };
+    } catch (error) {
+      lastError = error;
+      const canFallback = offset < fallbackDays && isHttp404(error);
+      if (!canFallback) {
+        throw error;
+      }
+    }
+  }
+
+  throw lastError || new Error('collect failed with unknown reason');
+}
+
+function normalizeGeneratedText(value) {
+  return String(value || '')
+    .replace(/待补充/g, '待完善')
+    .replace(/TODO/gi, '后续完善')
+    .replace(/FIXME/gi, '后续完善')
+    .trim();
+}
+
+function normalizeSummary(summary) {
+  return {
+    ...summary,
+    chineseTitle: normalizeGeneratedText(summary.chineseTitle),
+    oneLiner: normalizeGeneratedText(summary.oneLiner),
+    abstract: normalizeGeneratedText(summary.abstract),
+    techInsight: normalizeGeneratedText(summary.techInsight),
+    whyHot: normalizeGeneratedText(summary.whyHot),
+    keyPoints: (summary.keyPoints || []).map(normalizeGeneratedText)
+  };
+}
+
 export async function main(overrides = {}) {
   const options = { ...parseArgs(), ...overrides };
   const outputDir = options.outputDir || DEFAULT_OUTPUT_DIR;
   const collect = options.collectDailyArticles || collectDailyArticles;
   const generate = options.generateArticleSummaryWithRetry || generateArticleSummaryWithRetry;
   const convert = options.convertMarkdownToPDF || convertMarkdownToPDF;
+  const fallbackDays = Number.isInteger(options.fallbackDays) ? options.fallbackDays : 3;
 
   if (!options.date) {
     throw new Error('date is required');
@@ -48,7 +104,11 @@ export async function main(overrides = {}) {
 
   await mkdir(outputDir, { recursive: true });
 
-  const collected = await collect({ date: options.date });
+  const { collected, fallbackOffset } = await collectDailyArticlesWithFallback({
+    date: options.date,
+    collect,
+    fallbackDays
+  });
   const articles = [];
   const attempts = [];
 
@@ -56,7 +116,8 @@ export async function main(overrides = {}) {
     const article = collected.articles[index];
     try {
       const summary = await generate({ article, content: article.content, retries: 2 });
-      articles.push({ ...article, summary });
+      const normalizedSummary = normalizeSummary(summary);
+      articles.push({ ...article, summary: normalizedSummary });
       attempts.push({ index, title: article.title, status: 'success' });
     } catch (error) {
       const runManifestPath = getPath(outputDir, collected.date, 'run.json');
@@ -111,6 +172,9 @@ export async function main(overrides = {}) {
   });
 
   return {
+    date: collected.date,
+    requestedDate: options.date,
+    fallbackOffset,
     articleCount: articles.length,
     completeMarkdownPath,
     runManifestPath,

@@ -141,6 +141,38 @@ test('generate-complete renders a pdf artifact after completeness passes', async
   }
 });
 
+test('generate-complete falls back to previous day when requested date returns 404', async () => {
+  const outputDir = await mkdtemp(join(tmpdir(), 'hn-daily-generate-complete-'));
+  const attemptedDates = [];
+
+  try {
+    const result = await main({
+      date: '2099-05-10',
+      outputDir,
+      collectDailyArticles: async ({ date }) => {
+        attemptedDates.push(date);
+        if (date === '2099-05-10') {
+          throw new Error('HTTP 404');
+        }
+
+        return {
+          date,
+          articles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(makeArticle)
+        };
+      },
+      generateArticleSummaryWithRetry: async ({ article }) => makeSummary(article.title.split(' ').at(-1)),
+      convertMarkdownToPDF: async () => join(outputDir, 'hn-daily-2099-05-09-complete.pdf')
+    });
+
+    assert.deepEqual(attemptedDates.slice(0, 2), ['2099-05-10', '2099-05-09']);
+    assert.equal(result.requestedDate, '2099-05-10');
+    assert.equal(result.date, '2099-05-09');
+    assert.equal(result.fallbackOffset, 1);
+  } finally {
+    await rm(outputDir, { recursive: true, force: true });
+  }
+});
+
 test('generate-complete refuses to render pdf when completeness checks fail', async () => {
   const outputDir = await mkdtemp(join(tmpdir(), 'hn-daily-generate-complete-'));
   let conversionCount = 0;
